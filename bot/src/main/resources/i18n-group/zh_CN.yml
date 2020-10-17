@@ -1,0 +1,38 @@
+HELP_MSG: |-
+  本机器人能帮助您管理群组.
+
+  您可以控制我通过发送以下命令：
+
+  /options - 打开管理菜单
+
+  如需帮助，请通过 @TdBotProject 的讨论群组与我们联系.
+OPTIONS_DEF: |-
+  打开管理菜单
+BOT_NOT_ADMIN: |-
+  机器人不是群组管理员, 请授予 **删除消息** 与 **置顶** 权限.
+SESSION_TIMEOUT: |-
+  会话过期, 请重新打开设置.
+MENU_SWITCH_PM: |-
+  请点击下方按钮切换到私聊进行设置, 如果您看见 "开始" 按钮, 请点击它.
+MENU_SWITCH_BUTTON: |-
+  打开设置
+OPTIONS_MENU: |-
+  群组 **{}** 的设置
+
+  __选择您想改变的设置.__
+MENU_CHANNEL_MESSAGE: |-
+  频道消息管理
+MENU_CM_HELP: |-
+  作为频道的讨论群组时, 控制来自频道的消息.
+
+  由机器人删除消息即可禁用评论按钮.
+
+  复制与删除: 转发后再删除, 即保留消息同时禁用评论按钮.
+CM_MODE_ASIS: |-
+  不处理
+CM_MODE_DELETE: |-
+  删除
+CM_MODE_FORWARD_AND_DELETE: |-
+  复制与删除
+CM_KEEP_PIN: |-
+  恢复原置顶
