@@ -4,8 +4,7 @@ import io.nekohasekai.group.database.LastPinned
 import io.nekohasekai.group.global
 import io.nekohasekai.ktlib.td.core.TdClient
 import io.nekohasekai.ktlib.td.core.TdHandler
-import io.nekohasekai.ktlib.td.core.raw.forwardMessages
-import io.nekohasekai.ktlib.td.core.raw.pinChatMessage
+import io.nekohasekai.ktlib.td.core.raw.*
 import io.nekohasekai.ktlib.td.utils.delete
 import io.nekohasekai.ktlib.td.utils.makeForward
 import kotlinx.coroutines.GlobalScope
@@ -112,7 +111,7 @@ class ChanelMessagesHandler : TdHandler() {
 
                 2 -> {
 
-                    sudo makeForward (message) syncTo chatId
+                    sudo makeForward message syncTo chatId
 
                     sudo delete message
 
@@ -128,7 +127,24 @@ class ChanelMessagesHandler : TdHandler() {
 
             if (lastPinned == 0L) return
 
-            pinChatMessage(chatId, lastPinned, true)
+            getMessageWith(chatId, lastPinned) {
+
+                onSuccess {
+
+                    pinChatMessage(chatId, it.id, true)
+
+                }
+
+                onFailure {
+
+                    val cache = global.lastPinneds.fetch(chatId)
+                    cache.value!!.pinnedMessage = 0L
+                    cache.changed = true
+
+                }
+
+            }
+
 
         }
 
