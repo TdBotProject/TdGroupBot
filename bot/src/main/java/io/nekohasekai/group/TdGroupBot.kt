@@ -133,6 +133,13 @@ open class TdGroupBot(tag: String = "main", name: String = "TdGroupBot") : TdCli
 
     }
 
+    override suspend fun onFunction(userId: Int, chatId: Long, message: TdApi.Message, function: String, param: String, params: Array<String>, originParams: Array<String>) {
+
+        val L = localeFor(userId)
+
+        sudo makeMd L.HELP_MSG sendTo chatId
+
+    }
 
     override suspend fun skipFloodCheck(senderUserId: Int, message: TdApi.Message) = senderUserId == admin.toInt()
 

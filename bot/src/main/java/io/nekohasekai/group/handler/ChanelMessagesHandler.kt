@@ -1,21 +1,28 @@
 package io.nekohasekai.group.handler
 
-import cn.hutool.cache.impl.LFUCache
 import io.nekohasekai.group.database.LastPinned
 import io.nekohasekai.group.global
+import io.nekohasekai.ktlib.td.core.TdClient
 import io.nekohasekai.ktlib.td.core.TdHandler
+import io.nekohasekai.ktlib.td.core.raw.forwardMessages
 import io.nekohasekai.ktlib.td.core.raw.pinChatMessage
 import io.nekohasekai.ktlib.td.utils.delete
 import io.nekohasekai.ktlib.td.utils.makeForward
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import td.TdApi
+import java.util.*
+import kotlin.collections.HashMap
+import kotlin.concurrent.timerTask
 
 class ChanelMessagesHandler : TdHandler() {
 
-    val processed = LFUCache<Long, Boolean>(0, 3 * 1000)
+    val albumMessages = HashMap<Long, AlbumMessages>()
 
-    override suspend fun gc() {
+    class AlbumMessages {
 
-        processed.clear()
+        val messages = LinkedList<TdApi.Message>()
+        var task: TimerTask? = null
 
     }
 
@@ -25,35 +32,91 @@ class ChanelMessagesHandler : TdHandler() {
 
         val content = message.content
 
-        if (content is TdApi.MessagePinMessage) {
+        if (userId == me.id && content is TdApi.MessagePinMessage) {
 
             sudo delete message
 
             return
 
-        } else if (message.senderChatId == 0L || message.senderChatId == message.chatId) return
-
-        if (message.mediaAlbumId != 0L) {
-
-            if (processed.containsKey(message.mediaAlbumId)) return
-
-            processed.put(message.mediaAlbumId, true)
-
         }
 
-        when (config.cmMode) {
+        if (message.senderChatId == 0L || message.senderChatId == message.chatId) return
 
-            1 -> {
+        val mediaAlbumId = message.mediaAlbumId
 
-                sudo delete message
+        var inAlbum = false
+
+        if (mediaAlbumId != 0L) {
+
+            if (albumMessages[mediaAlbumId] == null) {
+
+                inAlbum = true
+
+                albumMessages[mediaAlbumId] = AlbumMessages()
 
             }
 
-            2 -> {
+            albumMessages[mediaAlbumId]!!.apply {
 
-                sudo makeForward (message) syncTo chatId
+                messages.add(message)
 
-                sudo delete message
+                task?.cancel()
+
+                task = timerTask {
+
+                    GlobalScope.launch(TdClient.eventsContext) {
+
+                        albumMessages.remove(mediaAlbumId)
+
+                        when (config.cmMode) {
+
+                            1 -> {
+
+                                delete(chatId, * messages.map { it.id }.toLongArray())
+
+                            }
+
+                            2 -> {
+
+                                forwardMessages(chatId, chatId, messages.map { it.id }.toLongArray(), TdApi.MessageSendOptions(), sendCopy = false, removeCaption = false)
+
+                                delete(chatId, * messages.map { it.id }.toLongArray())
+
+                            }
+
+                        }
+
+                    }
+
+                }.also {
+
+                    TdClient.timer.schedule(it, 300L)
+
+                }
+
+            }
+
+            if (!inAlbum) return
+
+        }
+
+        if (!inAlbum) {
+
+            when (config.cmMode) {
+
+                1 -> {
+
+                    sudo delete message
+
+                }
+
+                2 -> {
+
+                    sudo makeForward (message) syncTo chatId
+
+                    sudo delete message
+
+                }
 
             }
 
@@ -61,9 +124,11 @@ class ChanelMessagesHandler : TdHandler() {
 
         if (config.keepPin) {
 
-            val lastPinned = global.lastPinneds.fetch(chatId).value
+            val lastPinned = global.lastPinneds.fetch(chatId).value?.pinnedMessage ?: 0L
 
-            pinChatMessage(chatId, lastPinned?.pinnedMessage ?: 0L, true)
+            if (lastPinned == 0L) return
+
+            pinChatMessage(chatId, lastPinned, true)
 
         }
 

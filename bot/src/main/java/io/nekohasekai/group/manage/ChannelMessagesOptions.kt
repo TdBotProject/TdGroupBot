@@ -151,14 +151,18 @@ class ChannelMessagesOptions : TdHandler() {
 
                         onSuccess {
 
-                            if (cache.value == null) {
+                            database.write {
 
-                                cache.value = LastPinned.new(chatId) { pinnedMessage = it.pinnedMessageId }
+                                if (cache.value == null) {
 
-                            } else {
+                                    cache.value = LastPinned.new(chatId) { pinnedMessage = it.pinnedMessageId }
 
-                                cache.value!!.pinnedMessage = it.pinnedMessageId
-                                cache.changed = true
+                                } else {
+
+                                    cache.value!!.pinnedMessage = it.pinnedMessageId
+                                    cache.changed = true
+
+                                }
 
                             }
 
