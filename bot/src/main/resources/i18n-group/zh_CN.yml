@@ -30,9 +30,9 @@ MENU_CM_HELP: |-
   复制与删除: 转发后再删除, 即保留消息同时禁用评论按钮.
 CM_MODE_ASIS: |-
   不处理
+CM_MODE_UNPIN: |-
+  取消置顶
 CM_MODE_DELETE: |-
   删除
 CM_MODE_FORWARD_AND_DELETE: |-
   复制与删除
-CM_KEEP_PIN: |-
-  恢复原置顶

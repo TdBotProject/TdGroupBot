@@ -59,8 +59,8 @@ open class TdGroupBot(tag: String = "main", name: String = "TdGroupBot") : TdCli
         database.write {
 
             forceCreateTables(
-                    GroupConfigs,
-                    LastPinneds
+                    OptionMessages,
+                    GroupConfigs
             )
 
         }
@@ -90,13 +90,16 @@ open class TdGroupBot(tag: String = "main", name: String = "TdGroupBot") : TdCli
     }
 
     val groupConfigs by lazy { IdTableCacheMap(database, GroupConfig) }
-    val lastPinneds by lazy { IdTableCacheMap(database, LastPinned) }
+    val optionMessages by lazy { OptionMessages.MessagesMap(database) }
+    val optionChats by lazy { OptionMessages.ChatsMap(database) }
 
     override fun onLoadConfig() {
 
         super.onLoadConfig()
 
         _admin = intConfig("B0T_OWNER") ?: _admin
+
+        charArrayOf()
 
     }
 
@@ -108,6 +111,8 @@ open class TdGroupBot(tag: String = "main", name: String = "TdGroupBot") : TdCli
                 HELP_COMMAND,
                 CANCEL_COMMAND
         )
+
+        scheduleGcAndOptimize()
 
     }
 

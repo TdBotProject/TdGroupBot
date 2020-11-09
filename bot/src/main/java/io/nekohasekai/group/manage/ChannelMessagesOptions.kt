@@ -2,10 +2,9 @@ package io.nekohasekai.group.manage
 
 import io.nekohasekai.group.*
 import io.nekohasekai.group.database.GroupConfig
-import io.nekohasekai.group.database.LastPinned
 import io.nekohasekai.ktlib.core.toStatusString
+import io.nekohasekai.ktlib.td.cli.database
 import io.nekohasekai.ktlib.td.core.TdHandler
-import io.nekohasekai.ktlib.td.core.raw.getChatWith
 import io.nekohasekai.ktlib.td.i18n.BACK_ARROW
 import io.nekohasekai.ktlib.td.i18n.localeFor
 import io.nekohasekai.ktlib.td.utils.*
@@ -44,6 +43,14 @@ class ChannelMessagesOptions : TdHandler() {
 
             newLine {
 
+                dataButton(L.CM_MODE_UNPIN, -1)
+                dataButton((config?.cmMode ?: 0 == 3).toStatusString(true), GroupOptions.DATA_ID, SUB_ID, byteArrayOf(4))
+
+            }
+
+
+            newLine {
+
                 dataButton(L.CM_MODE_DELETE, -1)
                 dataButton((config?.cmMode == 1).toStatusString(true), GroupOptions.DATA_ID, SUB_ID, byteArrayOf(2))
 
@@ -53,13 +60,6 @@ class ChannelMessagesOptions : TdHandler() {
 
                 dataButton(L.CM_MODE_FORWARD_AND_DELETE, -1)
                 dataButton((config?.cmMode == 2).toStatusString(true), GroupOptions.DATA_ID, SUB_ID, byteArrayOf(3))
-
-            }
-
-            newLine {
-
-                dataButton(L.CM_KEEP_PIN, -1)
-                dataButton((config?.keepPin == true).toStatusString(), GroupOptions.DATA_ID, SUB_ID, byteArrayOf(4))
 
             }
 
@@ -83,94 +83,20 @@ class ChannelMessagesOptions : TdHandler() {
 
         val config = global.groupConfigs.fetch(targetChat)
 
-        when (data[0][0].toInt()) {
+        val cache = config.value
 
-            1 -> database.write {
+        val newMode = data[0][0].toInt() - 1
 
-                if (config.value == null) {
+        database.write {
 
-                    config.value = GroupConfig.new(targetChat) { cmMode = 0 }
+            if (cache == null) {
 
-                } else {
+                config.set(GroupConfig.new(targetChat) { cmMode = newMode })
 
-                    config.value!!.cmMode = 0
-                    config.changed = true
+            } else if (cache.cmMode != 2) {
 
-                }
-
-            }
-
-            2 -> database.write {
-
-                if (config.value == null) {
-
-                    config.value = GroupConfig.new(targetChat) { cmMode = 1 }
-
-                } else {
-
-                    config.value!!.cmMode = 1
-                    config.changed = true
-
-                }
-
-            }
-
-            3 -> database.write {
-
-                if (config.value == null) {
-
-                    config.value = GroupConfig.new(targetChat) { cmMode = 2 }
-
-                } else {
-
-                    config.value!!.cmMode = 2
-                    config.changed = true
-
-                }
-
-            }
-
-            4 -> database.write {
-
-                if (config.value == null) {
-
-                    config.value = GroupConfig.new(targetChat) { keepPin = true }
-
-                } else {
-
-                    config.value!!.keepPin = !config.value!!.keepPin
-                    config.changed = true
-
-                }
-
-                if (config.value!!.keepPin) {
-
-                    val cache = global.lastPinneds.fetch(targetChat)
-
-                    getChatWith(targetChat) {
-
-                        onSuccess {
-
-                            database.write {
-
-                                if (cache.value == null) {
-
-                                    cache.value = LastPinned.new(chatId) { pinnedMessage = it.pinnedMessageId }
-
-                                } else {
-
-                                    cache.value!!.pinnedMessage = it.pinnedMessageId
-                                    cache.changed = true
-
-                                }
-
-                            }
-
-                        }
-
-                    }
-
-                }
+                cache.cmMode = newMode
+                config.notifyChanged()
 
             }
 

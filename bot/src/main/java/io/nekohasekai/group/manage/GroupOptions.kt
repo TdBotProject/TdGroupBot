@@ -1,5 +1,6 @@
 package io.nekohasekai.group.manage
 
+import cn.hutool.cache.impl.LFUCache
 import cn.hutool.core.util.NumberUtil
 import io.nekohasekai.group.*
 import io.nekohasekai.ktlib.core.input
@@ -39,13 +40,16 @@ class GroupOptions : TdHandler() {
 
     }
 
-    val preSessions = hashMapOf<Int, Long>()
-    val sessions = hashMapOf<String, Long>()
+    class PreSession(
+            val chatId: Long,
+            val fromMessage: Long
+    )
+
+    val preSessions = LFUCache<Int, PreSession>(-1, 3 * 60 * 1000L)
 
     override suspend fun gc() {
 
         preSessions.clear()
-        sessions.clear()
 
     }
 
@@ -63,7 +67,7 @@ class GroupOptions : TdHandler() {
 
         try {
             getChat(targetChat)
-        } catch (e:TdException) {
+        } catch (e: TdException) {
             sudo make e.message replyTo message
             return
         }
@@ -112,23 +116,21 @@ class GroupOptions : TdHandler() {
 
             if (global.admin != userId && checkChatAdmin(chatId, userId, queryId)) return
 
-            preSessions[userId] = chatId
+            preSessions.put(userId, PreSession(chatId, messageId))
 
             sudo makeAnswerUrl mkStartPayloadUrl(me.username, "options") answerTo queryId
-
-            delay(3000L)
-
-            delete(chatId, messageId)
 
             return
 
         }
 
-        val targetChat = sessions["${userId}_$messageId"]
+        val targetChat = global.optionChats.fetch(userId to messageId).value
 
         if (targetChat == null) {
 
             sudo makeAlert localeFor(userId).SESSION_TIMEOUT answerTo queryId
+
+            delay(1000L)
 
             delete(chatId, messageId)
 
@@ -152,6 +154,18 @@ class GroupOptions : TdHandler() {
 
     suspend fun startSet(userId: Int, chatId: Long, messageId: Long, targetChat: Long, isEdit: Boolean) {
 
+        val chatCache = global.optionMessages.fetch(userId to chatId)
+
+        val lastMessage = chatCache.value
+
+        if (lastMessage != null && lastMessage > 0L && !isEdit) {
+
+            global.optionChats.fetch(userId to lastMessage).write(null)
+
+            delete(chatId, lastMessage)
+
+        }
+
         val L = localeFor(userId)
 
         sudo makeMd L.OPTIONS_MENU.input(getChat(targetChat).title) withMarkup inlineButton {
@@ -160,7 +174,12 @@ class GroupOptions : TdHandler() {
 
         } onSuccess {
 
-            if (!isEdit) sessions["${userId}_${it.id}"] = targetChat
+            if (!isEdit) {
+
+                global.optionChats.fetch(userId to it.id).write(chatId)
+                global.optionMessages.remove(userId to chatId)
+
+            }
 
         } at messageId edit isEdit sendOrEditTo chatId
 
@@ -168,7 +187,7 @@ class GroupOptions : TdHandler() {
 
     override suspend fun onStartPayload(userId: Int, chatId: Long, message: TdApi.Message, payload: String, params: Array<String>) {
 
-        val targetChat = preSessions.remove(userId)
+        val targetChat = preSessions.get(userId)
 
         if (targetChat == null) {
 
@@ -178,7 +197,11 @@ class GroupOptions : TdHandler() {
 
         }
 
-        startSet(userId, chatId, 0L, targetChat, false)
+        preSessions.remove(userId)
+
+        delete(targetChat.chatId, targetChat.fromMessage)
+
+        startSet(userId, chatId, 0L, targetChat.chatId, false)
 
     }
 

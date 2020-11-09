@@ -18,6 +18,6 @@ internal val L.OPTIONS_MENU by string
 internal val L.MENU_CHANNEL_MESSAGE by string
 internal val L.MENU_CM_HELP by string
 internal val L.CM_MODE_ASIS by string
+internal val L.CM_MODE_UNPIN by string
 internal val L.CM_MODE_DELETE by string
 internal val L.CM_MODE_FORWARD_AND_DELETE by string
-internal val L.CM_KEEP_PIN by string

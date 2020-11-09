@@ -1,10 +1,11 @@
 package io.nekohasekai.group.handler
 
-import io.nekohasekai.group.database.LastPinned
 import io.nekohasekai.group.global
 import io.nekohasekai.ktlib.td.core.TdClient
 import io.nekohasekai.ktlib.td.core.TdHandler
-import io.nekohasekai.ktlib.td.core.raw.*
+import io.nekohasekai.ktlib.td.core.raw.forwardMessages
+import io.nekohasekai.ktlib.td.core.raw.unpinChatMessage
+import io.nekohasekai.ktlib.td.extensions.senderChatId
 import io.nekohasekai.ktlib.td.utils.delete
 import io.nekohasekai.ktlib.td.utils.makeForward
 import kotlinx.coroutines.GlobalScope
@@ -39,13 +40,13 @@ class ChanelMessagesHandler : TdHandler() {
 
         }
 
-        if (message.senderChatId == 0L || message.senderChatId == message.chatId) return
+        if (message.senderChatId == 0L || message.senderChatId == message.chatId || !message.isPinned) return
 
         val mediaAlbumId = message.mediaAlbumId
 
         var inAlbum = false
 
-        if (mediaAlbumId != 0L) {
+        if (mediaAlbumId != 0L && config.cmMode in intArrayOf(1, 2)) {
 
             if (albumMessages[mediaAlbumId] == null) {
 
@@ -117,53 +118,7 @@ class ChanelMessagesHandler : TdHandler() {
 
                 }
 
-            }
-
-        }
-
-        if (config.keepPin) {
-
-            val lastPinned = global.lastPinneds.fetch(chatId).value?.pinnedMessage ?: 0L
-
-            if (lastPinned == 0L) return
-
-            getMessageWith(chatId, lastPinned) {
-
-                onSuccess {
-
-                    pinChatMessage(chatId, it.id, true)
-
-                }
-
-                onFailure {
-
-                    val cache = global.lastPinneds.fetch(chatId)
-                    cache.value!!.pinnedMessage = 0L
-                    cache.changed = true
-
-                }
-
-            }
-
-
-        }
-
-    }
-
-    override suspend fun onChatPinnedMessage(chatId: Long, pinnedMessageId: Long) {
-
-        val cache = global.lastPinneds.fetch(chatId)
-
-        database.write {
-
-            if (cache.value == null) {
-
-                cache.value = LastPinned.new(chatId) { pinnedMessage = pinnedMessageId }
-
-            } else if (cache.value!!.pinnedMessage != pinnedMessageId) {
-
-                cache.value!!.pinnedMessage = pinnedMessageId
-                cache.changed = true
+                3 -> unpinChatMessage(chatId, message.id)
 
             }
 
