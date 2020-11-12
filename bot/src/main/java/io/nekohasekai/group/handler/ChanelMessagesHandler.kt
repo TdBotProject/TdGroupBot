@@ -40,87 +40,87 @@ class ChanelMessagesHandler : TdHandler() {
 
         }
 
-        if (message.senderChatId == 0L || message.senderChatId == message.chatId || !message.isPinned) return
+        if (message.senderChatId == 0L || message.senderChatId == message.chatId) return
 
         val mediaAlbumId = message.mediaAlbumId
 
-        var inAlbum = false
+        if (mediaAlbumId != 0L) {
 
-        if (mediaAlbumId != 0L && config.cmMode in intArrayOf(1, 2)) {
+            if (config.cmMode in intArrayOf(1, 2)) {
 
-            if (albumMessages[mediaAlbumId] == null) {
+                if (albumMessages[mediaAlbumId] == null) {
 
-                inAlbum = true
+                    albumMessages[mediaAlbumId] = AlbumMessages()
 
-                albumMessages[mediaAlbumId] = AlbumMessages()
+                }
 
-            }
+                albumMessages[mediaAlbumId]!!.apply {
 
-            albumMessages[mediaAlbumId]!!.apply {
+                    messages.add(message)
 
-                messages.add(message)
+                    task?.cancel()
 
-                task?.cancel()
+                    task = timerTask {
 
-                task = timerTask {
+                        GlobalScope.launch(TdClient.eventsContext) {
 
-                    GlobalScope.launch(TdClient.eventsContext) {
+                            albumMessages.remove(mediaAlbumId)
 
-                        albumMessages.remove(mediaAlbumId)
+                            when (config.cmMode) {
 
-                        when (config.cmMode) {
+                                1 -> {
 
-                            1 -> {
+                                    delete(chatId, * messages.map { it.id }.toLongArray())
 
-                                delete(chatId, * messages.map { it.id }.toLongArray())
+                                }
 
-                            }
+                                2 -> {
 
-                            2 -> {
+                                    forwardMessages(chatId, chatId, messages.map { it.id }.toLongArray(), TdApi.MessageSendOptions(), sendCopy = false, removeCaption = false)
 
-                                forwardMessages(chatId, chatId, messages.map { it.id }.toLongArray(), TdApi.MessageSendOptions(), sendCopy = false, removeCaption = false)
+                                    delete(chatId, * messages.map { it.id }.toLongArray())
 
-                                delete(chatId, * messages.map { it.id }.toLongArray())
+                                }
 
                             }
 
                         }
 
+                    }.also {
+
+                        TdClient.timer.schedule(it, 300L)
+
                     }
-
-                }.also {
-
-                    TdClient.timer.schedule(it, 300L)
 
                 }
 
+            } else if (config.cmMode == 3 && message.isPinned) {
+
+                unpinChatMessage(chatId, message.id)
+
             }
 
-            if (!inAlbum) return
+            return
 
         }
 
-        if (!inAlbum) {
+        when (config.cmMode) {
 
-            when (config.cmMode) {
+            1 -> {
 
-                1 -> {
-
-                    sudo delete message
-
-                }
-
-                2 -> {
-
-                    sudo makeForward message syncTo chatId
-
-                    sudo delete message
-
-                }
-
-                3 -> unpinChatMessage(chatId, message.id)
+                sudo delete message
 
             }
+
+            2 -> {
+
+                sudo makeForward message syncTo chatId
+
+                sudo delete message
+
+            }
+
+            3 -> unpinChatMessage(chatId, message.id)
 
         }
 
