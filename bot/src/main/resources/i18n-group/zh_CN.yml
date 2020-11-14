@@ -36,3 +36,23 @@ CM_MODE_DELETE: |-
   删除
 CM_MODE_FORWARD_AND_DELETE: |-
   复制与删除
+
+MODES: 忽略|禁言|封锁|移除
+REQUIRE_USERBOT: |-
+  启用该功能需要另添加 {} 为管理员,  因为相关分析接口不为机器人提供.
+SR_BOT_CHECK: |-
+  你是不是人呢? {}
+SW_INLIST: |
+  {} 在 @SpamWatch 封锁列表中:
+
+  原因: {}
+  执行: {}
+REPORT: |-
+  反馈
+REPORT_BOT_CHECK: |-
+  这不是机器人
+
+FN_MISSING_ACTION: 缺少参数名.
+FN_UNKNOWN_ACTION: 未知参数.
+FN_INVALID_PARAM: 参数无效.
+FN_SETTING_UPDATED: 已更新设置.

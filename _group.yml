@@ -1,5 +1,8 @@
 BOT_TOKEN:
 B0T_OWNER:
+USER_AGENT: none
+SPAM_WATCH_API_KEY:
+REPORT_URL: https://t.me/TdBotProject
 
 BOT_LANG: zh_CN
 LOG_LEVEL: INFO

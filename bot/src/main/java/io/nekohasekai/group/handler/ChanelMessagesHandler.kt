@@ -1,6 +1,6 @@
 package io.nekohasekai.group.handler
 
-import io.nekohasekai.group.global
+import io.nekohasekai.group.exts.global
 import io.nekohasekai.ktlib.td.core.TdClient
 import io.nekohasekai.ktlib.td.core.TdHandler
 import io.nekohasekai.ktlib.td.core.raw.forwardMessages

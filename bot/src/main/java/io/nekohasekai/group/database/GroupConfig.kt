@@ -8,6 +8,9 @@ class GroupConfig(id: EntityID<Long>) : Entity<Long>(id) {
 
     var cmMode by GroupConfigs.cmMode
 
+    var botCheck by GroupConfigs.botCheck
+    var spamWatch by GroupConfigs.spamWatch
+
     companion object : EntityClass<Long, GroupConfig>(GroupConfigs)
 
 }

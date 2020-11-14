@@ -3,6 +3,7 @@ package io.nekohasekai.group.manage
 import cn.hutool.cache.impl.LFUCache
 import cn.hutool.core.util.NumberUtil
 import io.nekohasekai.group.*
+import io.nekohasekai.group.exts.global
 import io.nekohasekai.ktlib.core.input
 import io.nekohasekai.ktlib.core.shift
 import io.nekohasekai.ktlib.td.core.TdException
@@ -74,7 +75,7 @@ class GroupOptions : TdHandler() {
 
         if (global.admin != userId) {
 
-            if (!message.fromAnonymous && checkChatAdmin(targetChat, userId, message)) return
+            if (checkChatAdmin(targetChat, userId, message)) return
 
         }
 

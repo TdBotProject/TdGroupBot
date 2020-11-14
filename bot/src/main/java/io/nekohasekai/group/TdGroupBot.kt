@@ -1,14 +1,18 @@
 package io.nekohasekai.group
 
 import io.nekohasekai.group.database.*
-import io.nekohasekai.group.handler.ChanelMessagesHandler
+import io.nekohasekai.group.handler.*
 import io.nekohasekai.group.manage.GroupOptions
-import io.nekohasekai.ktlib.core.getValue
+import io.nekohasekai.group.manage.OptionsFunction
 import io.nekohasekai.ktlib.core.input
 import io.nekohasekai.ktlib.db.IdTableCacheMap
 import io.nekohasekai.ktlib.db.forceCreateTables
 import io.nekohasekai.ktlib.td.cli.TdCli
+import io.nekohasekai.ktlib.td.core.TdBridge
+import io.nekohasekai.ktlib.td.core.TdClient
 import io.nekohasekai.ktlib.td.core.persists.store.DatabasePersistStore
+import io.nekohasekai.ktlib.td.core.raw.setLogStream
+import io.nekohasekai.ktlib.td.core.raw.setLogVerbosityLevel
 import io.nekohasekai.ktlib.td.extensions.fromPrivate
 import io.nekohasekai.ktlib.td.extensions.htmlLink
 import io.nekohasekai.ktlib.td.i18n.*
@@ -42,15 +46,31 @@ open class TdGroupBot(tag: String = "main", name: String = "TdGroupBot") : TdCli
 
     }
 
-    @Suppress("ObjectPropertyName")
-    private var _admin = 0
-    val admin by ::_admin
+    var admin = 0
+    var reportUrl = "https://t.me/TdBotProject"
+    var userAgentTag = ""
+    var spamWatchKey = ""
+
+    override fun onLoadConfig() {
+
+        super.onLoadConfig()
+
+        admin = intConfig("B0T_OWNER") ?: admin
+        reportUrl = stringConfig("REPORT_URL") ?: reportUrl
+        userAgentTag = stringConfig("USER_AGENT") ?: userAgentTag
+        spamWatchKey = stringConfig("SPAM_WATCH_API_KEY") ?: spamWatchKey
+
+    }
 
     override var configFile = File("group.yml")
 
     override fun onLoad() {
 
         super.onLoad()
+
+        setLogStream(TdApi.LogStreamFile("tdlib.log", 100 * 1024 * 1024L, true))
+
+        setLogVerbosityLevel(4)
 
         clientLog.debug("Init databases")
 
@@ -60,7 +80,8 @@ open class TdGroupBot(tag: String = "main", name: String = "TdGroupBot") : TdCli
 
             forceCreateTables(
                     OptionMessages,
-                    GroupConfigs
+                    GroupConfigs,
+                    UserFirstMessage
             )
 
         }
@@ -85,7 +106,13 @@ open class TdGroupBot(tag: String = "main", name: String = "TdGroupBot") : TdCli
 
         addHandler(GroupOptions())
 
+        addHandler(OptionsFunction())
+
         addHandler(ChanelMessagesHandler())
+
+        addHandler(BotCheckHandler())
+
+        addHandler(SpamWatchHandler())
 
     }
 
@@ -93,13 +120,31 @@ open class TdGroupBot(tag: String = "main", name: String = "TdGroupBot") : TdCli
     val optionMessages by lazy { OptionMessages.MessagesMap(database) }
     val optionChats by lazy { OptionMessages.ChatsMap(database) }
 
-    override fun onLoadConfig() {
+    var userAgent: TdClient? = null
 
-        super.onLoadConfig()
+    override suspend fun beforeLogin() {
 
-        _admin = intConfig("B0T_OWNER") ?: _admin
+        if (userAgentTag == "none") return
 
-        charArrayOf()
+        clientLog.info("Launching UserAgent...")
+
+        if (userAgentTag.isNotBlank()) {
+            val agent = TdBridge.getClient(userAgentTag)
+            if (agent != null) {
+                userAgent = agent
+            } else {
+                clientLog.warn("USER_AGENT specified but not found, launch manually.")
+            }
+        }
+
+        if (userAgent == null) userAgent = object : TdCli("$tag-agent") {
+            override val loginType = LoginType.USER
+        }.also {
+            it.options = options
+            it.dataDir = File(dataDir, "userAgent")
+        }.apply {
+            waitForLogin()
+        }
 
     }
 
@@ -144,6 +189,13 @@ open class TdGroupBot(tag: String = "main", name: String = "TdGroupBot") : TdCli
 
         sudo makeMd L.HELP_MSG sendTo chatId
 
+    }
+
+    override suspend fun onUndefinedFunction(userId: Int, chatId: Long, message: TdApi.Message, function: String, param: String, params: Array<String>, originParams: Array<String>) {
+        if (!message.fromPrivate) {
+            rejectFunction()
+        }
+        super.onUndefinedFunction(userId, chatId, message, function, param, params, originParams)
     }
 
     override suspend fun skipFloodCheck(senderUserId: Int, message: TdApi.Message) = senderUserId == admin.toInt()

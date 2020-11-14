@@ -2,6 +2,7 @@ package io.nekohasekai.group.manage
 
 import io.nekohasekai.group.*
 import io.nekohasekai.group.database.GroupConfig
+import io.nekohasekai.group.exts.global
 import io.nekohasekai.ktlib.core.toStatusString
 import io.nekohasekai.ktlib.td.cli.database
 import io.nekohasekai.ktlib.td.core.TdHandler
@@ -83,17 +84,17 @@ class ChannelMessagesOptions : TdHandler() {
 
         val config = global.groupConfigs.fetch(targetChat)
 
-        val cache = config.value
+        val cache = config.value ?: database.write {
+
+            GroupConfig.new(targetChat, {}).also { config.set(it) }
+
+        }
 
         val newMode = data[0][0].toInt() - 1
 
-        database.write {
+        if (cache.cmMode != newMode) {
 
-            if (cache == null) {
-
-                config.set(GroupConfig.new(targetChat) { cmMode = newMode })
-
-            } else if (cache.cmMode != 2) {
+            database.write {
 
                 cache.cmMode = newMode
                 config.notifyChanged()
