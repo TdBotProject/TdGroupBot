@@ -2,6 +2,7 @@ package io.nekohasekai.group
 
 import io.nekohasekai.group.database.*
 import io.nekohasekai.group.handler.*
+import io.nekohasekai.group.handler.special.SP1
 import io.nekohasekai.group.manage.GroupOptions
 import io.nekohasekai.group.manage.OptionsFunction
 import io.nekohasekai.ktlib.core.input
@@ -113,6 +114,10 @@ open class TdGroupBot(tag: String = "main", name: String = "TdGroupBot") : TdCli
         addHandler(BotCheckHandler())
 
         addHandler(SpamWatchHandler())
+
+        // 给别人定制的东西
+
+        addHandler(SP1())
 
     }
 
