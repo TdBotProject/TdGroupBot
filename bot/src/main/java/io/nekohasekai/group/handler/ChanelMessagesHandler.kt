@@ -68,11 +68,7 @@ class ChanelMessagesHandler : TdHandler() {
 
                             when (config.cmMode) {
 
-                                1 -> {
-
-                                    delete(chatId, * messages.map { it.id }.toLongArray())
-
-                                }
+                                1 -> delete(chatId, * messages.map { it.id }.toLongArray())
 
                                 2 -> {
 
@@ -106,11 +102,7 @@ class ChanelMessagesHandler : TdHandler() {
 
         when (config.cmMode) {
 
-            1 -> {
-
-                sudo delete message
-
-            }
+            1 -> sudo delete message
 
             2 -> {
 

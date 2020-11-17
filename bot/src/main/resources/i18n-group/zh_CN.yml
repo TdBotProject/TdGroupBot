@@ -36,17 +36,14 @@ CM_MODE_DELETE: |-
   删除
 CM_MODE_FORWARD_AND_DELETE: |-
   复制与删除
-
-MODES: 忽略|禁言|封锁|移除
-REQUIRE_USERBOT: |-
-  启用该功能需要另添加 {} 为管理员,  因为相关分析接口不为机器人提供.
-SR_BOT_CHECK: |-
-  你是不是人呢? {}
+AS_ALERT: |-
+  提示 {}, 一段时间内的第一条消息不允许为文本.
 SW_INLIST: |
   {} 在 @SpamWatch 封锁列表中:
 
   原因: {}
   执行: {}
+MODES: 忽略|禁言|封锁|移除
 REPORT: |-
   反馈
 REPORT_BOT_CHECK: |-

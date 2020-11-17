@@ -52,7 +52,7 @@ class OptionsFunction : TdHandler() {
 
         val intOptions = arrayOf(
                 "cm_mode",
-                "bot_check",
+                "simple_as",
                 "spam_watch"
         )
 
@@ -74,9 +74,9 @@ class OptionsFunction : TdHandler() {
                     }
                     config.notifyChanged()
                 }
-                1 -> if (cache.botCheck != newMode) {
+                1 -> if (cache.simpleAs != newMode) {
                     database.write {
-                        cache.botCheck = newMode
+                        cache.simpleAs = newMode
                     }
                     config.notifyChanged()
                 }

@@ -7,9 +7,7 @@ object GroupConfigs : IdTable<Long>("group_config") {
     val groupId = long("group_id").entityId()
     val cmMode = integer("cm_mode").default(0)
 
-    // 0->ignore, 1->mute, 2-> kick, 3->ban
-
-    val botCheck = integer("bot_check").default(0)
+    val simpleAs = integer("simple_as").default(0)
     val spamWatch = integer("spam_watch").default(0)
 
     override val id = groupId

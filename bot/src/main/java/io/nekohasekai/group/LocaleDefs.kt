@@ -21,10 +21,9 @@ internal val L.CM_MODE_ASIS by string
 internal val L.CM_MODE_UNPIN by string
 internal val L.CM_MODE_DELETE by string
 internal val L.CM_MODE_FORWARD_AND_DELETE by string
-internal val L.MODES by string
-internal val L.REQUIRE_USERBOT by string
-internal val L.SR_BOT_CHECK by string
+internal val L.AS_ALERT by string
 internal val L.SW_INLIST by string
+internal val L.MODES by string
 internal val L.REPORT by string
 internal val L.REPORT_BOT_CHECK by string
 internal val L.FN_MISSING_ACTION by string

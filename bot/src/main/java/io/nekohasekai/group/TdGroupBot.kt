@@ -111,7 +111,7 @@ open class TdGroupBot(tag: String = "main", name: String = "TdGroupBot") : TdCli
 
         addHandler(ChanelMessagesHandler())
 
-        addHandler(BotCheckHandler())
+        addHandler(SimpleAntiSpamHandler())
 
         addHandler(SpamWatchHandler())
 

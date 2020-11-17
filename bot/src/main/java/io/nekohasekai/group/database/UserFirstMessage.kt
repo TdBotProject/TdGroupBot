@@ -12,6 +12,6 @@ object UserFirstMessage : Table("user_no_message") {
 
     override val primaryKey = PrimaryKey(chatId, userId)
 
-    class NoMessageMap(database: DatabaseDispatcher) : TwoIndexCacheMap<Int, Int, Int?>(database, UserFirstMessage, chatId, userId, firstMessage)
+    class FirstMessageMap(database: DatabaseDispatcher) : TwoIndexCacheMap<Int, Int, Int?>(database, UserFirstMessage, chatId, userId, firstMessage)
 
 }
