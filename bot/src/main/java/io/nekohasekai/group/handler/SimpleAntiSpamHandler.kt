@@ -69,8 +69,6 @@ class SimpleAntiSpamHandler : TdHandler() {
                     isFirstMessage = userMessages.messages.none { !it.isServiceMessage && it.date < message.date }
                     if (!isFirstMessage) {
                         userFirstMessage.set(userMessages.messages.filter { !it.isServiceMessage }.minByOrNull { it.date }!!.date)
-                    } else {
-                        userFirstMessage.set(message.date)
                     }
                 } catch (e: TdException) {
                     defaultLog.warn(e)
@@ -125,8 +123,9 @@ class SimpleAntiSpamHandler : TdHandler() {
                 content.text.text.count { CharUtil.isEmoji(it) } < 3)
 
         if (!isSafe) {
-            userFirstMessage.set(0)
             sudo delete message
+        } else {
+            userFirstMessage.set(message.date)
         }
 
     }
