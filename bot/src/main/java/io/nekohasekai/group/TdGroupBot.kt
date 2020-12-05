@@ -1,7 +1,12 @@
 package io.nekohasekai.group
 
-import io.nekohasekai.group.database.*
-import io.nekohasekai.group.handler.*
+import io.nekohasekai.group.database.GroupConfig
+import io.nekohasekai.group.database.GroupConfigs
+import io.nekohasekai.group.database.OptionMessages
+import io.nekohasekai.group.database.UserFirstMessage
+import io.nekohasekai.group.handler.ChanelMessagesHandler
+import io.nekohasekai.group.handler.SimpleAntiSpamHandler
+import io.nekohasekai.group.handler.SpamWatchHandler
 import io.nekohasekai.group.handler.special.SP1
 import io.nekohasekai.group.manage.GroupOptions
 import io.nekohasekai.group.manage.OptionsFunction
@@ -12,14 +17,16 @@ import io.nekohasekai.ktlib.td.cli.TdCli
 import io.nekohasekai.ktlib.td.core.TdBridge
 import io.nekohasekai.ktlib.td.core.TdClient
 import io.nekohasekai.ktlib.td.core.persists.store.DatabasePersistStore
-import io.nekohasekai.ktlib.td.core.raw.setLogStream
-import io.nekohasekai.ktlib.td.core.raw.setLogVerbosityLevel
 import io.nekohasekai.ktlib.td.extensions.fromPrivate
 import io.nekohasekai.ktlib.td.extensions.htmlLink
 import io.nekohasekai.ktlib.td.i18n.*
-import io.nekohasekai.ktlib.td.i18n.store.*
-import io.nekohasekai.ktlib.td.utils.*
+import io.nekohasekai.ktlib.td.i18n.store.DatabaseLocaleStore
+import io.nekohasekai.ktlib.td.i18n.store.InMemoryLocaleStore
+import io.nekohasekai.ktlib.td.i18n.store.LocaleStore
 import io.nekohasekai.ktlib.td.utils.commands.GetIdCommand
+import io.nekohasekai.ktlib.td.utils.makeHtml
+import io.nekohasekai.ktlib.td.utils.makeMd
+import io.nekohasekai.ktlib.td.utils.upsertCommands
 import kotlinx.coroutines.delay
 import td.TdApi
 import java.io.File
@@ -36,13 +43,9 @@ open class TdGroupBot(tag: String = "main", name: String = "TdGroupBot") : TdCli
 
         @JvmStatic
         fun main(args: Array<String>) {
-
             launch(args)
-
             loadConfig()
-
             start()
-
         }
 
     }
@@ -53,14 +56,12 @@ open class TdGroupBot(tag: String = "main", name: String = "TdGroupBot") : TdCli
     var spamWatchKey = ""
 
     override fun onLoadConfig() {
-
         super.onLoadConfig()
 
         admin = intConfig("B0T_OWNER") ?: admin
         reportUrl = stringConfig("REPORT_URL") ?: reportUrl
         userAgentTag = stringConfig("USER_AGENT") ?: userAgentTag
         spamWatchKey = stringConfig("SPAM_WATCH_API_KEY") ?: spamWatchKey
-
     }
 
     override var configFile = File("group.yml")
@@ -68,10 +69,6 @@ open class TdGroupBot(tag: String = "main", name: String = "TdGroupBot") : TdCli
     override fun onLoad() {
 
         super.onLoad()
-
-        setLogStream(TdApi.LogStreamFile("tdlib.log", 100 * 1024 * 1024L, true))
-
-        setLogVerbosityLevel(4)
 
         clientLog.debug("Init databases")
 
@@ -106,13 +103,10 @@ open class TdGroupBot(tag: String = "main", name: String = "TdGroupBot") : TdCli
         addHandler(GetIdCommand())
 
         addHandler(GroupOptions())
-
         addHandler(OptionsFunction())
 
         addHandler(ChanelMessagesHandler())
-
         addHandler(SimpleAntiSpamHandler())
-
         addHandler(SpamWatchHandler())
 
         // 给别人定制的东西

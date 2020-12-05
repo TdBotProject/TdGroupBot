@@ -9,8 +9,12 @@ import io.nekohasekai.ktlib.core.shift
 import io.nekohasekai.ktlib.td.core.TdException
 import io.nekohasekai.ktlib.td.core.TdHandler
 import io.nekohasekai.ktlib.td.core.raw.getChat
-import io.nekohasekai.ktlib.td.extensions.*
-import io.nekohasekai.ktlib.td.i18n.*
+import io.nekohasekai.ktlib.td.extensions.fromPrivate
+import io.nekohasekai.ktlib.td.extensions.fromSuperGroup
+import io.nekohasekai.ktlib.td.extensions.mkStartPayloadUrl
+import io.nekohasekai.ktlib.td.i18n.FN_SUPER_GROUP_ONLY
+import io.nekohasekai.ktlib.td.i18n.clientLocale
+import io.nekohasekai.ktlib.td.i18n.localeFor
 import io.nekohasekai.ktlib.td.utils.*
 import kotlinx.coroutines.delay
 import td.TdApi
@@ -177,8 +181,8 @@ class GroupOptions : TdHandler() {
 
             if (!isEdit) {
 
-                global.optionChats.fetch(userId to it.id).write(chatId)
-                global.optionMessages.remove(userId to chatId)
+                global.optionChats.fetch(userId to it.id).write(targetChat)
+                global.optionMessages.remove(userId to targetChat)
 
             }
 
