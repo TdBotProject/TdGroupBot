@@ -81,7 +81,7 @@ class SP2 : TdHandler() {
     }
 
     override suspend fun onNewMessage(userId: Int, chatId: Long, message: TdApi.Message) {
-        if (!enabled.contains(chatId)) return
+        if (message.isServiceMessage || !enabled.contains(chatId)) return
 
         val userName = getUser(userId).displayName
 

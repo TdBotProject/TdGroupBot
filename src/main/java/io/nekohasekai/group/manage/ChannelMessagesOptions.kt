@@ -8,7 +8,10 @@ import io.nekohasekai.ktlib.td.cli.database
 import io.nekohasekai.ktlib.td.core.TdHandler
 import io.nekohasekai.ktlib.td.i18n.BACK_ARROW
 import io.nekohasekai.ktlib.td.i18n.localeFor
-import io.nekohasekai.ktlib.td.utils.*
+import io.nekohasekai.ktlib.td.utils.confirmTo
+import io.nekohasekai.ktlib.td.utils.inlineButton
+import io.nekohasekai.ktlib.td.utils.make
+import io.nekohasekai.ktlib.td.utils.makeInlineButton
 import td.TdApi
 
 class ChannelMessagesOptions : TdHandler() {
@@ -64,7 +67,7 @@ class ChannelMessagesOptions : TdHandler() {
 
             }
 
-            dataLine(L.BACK_ARROW, GroupOptions.DATA_ID, byteArrayOf(0))
+            dataLine(L.BACK_ARROW, GroupOptions.DATA_ID, GroupOptions.BACK)
 
         }
 

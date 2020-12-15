@@ -38,14 +38,11 @@ class OptionsFunction : TdHandler() {
     ) {
 
         if (!NumberUtil.isLong(param) && !message.fromSuperGroup) {
-
             sudo makeHtml localeFor(userId).FN_SUPER_GROUP_ONLY replyTo message
             return
-
         }
 
         val targetChat = if (NumberUtil.isLong(param)) param.toLong() else chatId
-
         if (global.admin != userId && checkChatAdmin(targetChat, userId, message)) return
 
         if (param.isBlank()) {
@@ -60,18 +57,15 @@ class OptionsFunction : TdHandler() {
         }
 
         val config = global.groupConfigs.fetch(targetChat)
-
         val cache = config.value ?: database.write {
-
             GroupConfig.new(targetChat, {}).also { config.set(it) }
-
         }
 
         val intOptions = arrayOf(
             "cm_mode",
             "simple_as",
             "spam_watch",
-            "del_serv_msgs"
+            "del_serv"
         )
 
         val action = params[0]

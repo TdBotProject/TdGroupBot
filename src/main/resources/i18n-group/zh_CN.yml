@@ -69,6 +69,8 @@ SIMPLE_AS_INFO: |-
   **关于消息删除**
   + 删除后用户将被标记为未发言
 
+  另, 可以订阅 @TdBotProject 获得规则更新通知 :)
+
   您可以选择命中该检查时执行的动作:
 SW_INFO: |-
   @SpamWatch 是知名的中心化广告黑名单, 如果您启用该接口, 则机器人将会在用户第一次发言时向该方请求检查.
@@ -79,7 +81,7 @@ SW_INLIST: |
 
   原因: {}
   执行: {}
-MODES: 不处理|忽略|禁言|封锁|移除
+MODES: 不处理|禁言|封锁|移除
 REPORT: |-
   反馈
 MENU_DELETE_SERVICE_MESSAGES: |-
