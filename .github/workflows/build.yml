@@ -1,0 +1,27 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - dev
+  pull_request:
+    branches:
+      - dev
+
+jobs:
+  gradleBuild:
+    name: Gradle Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: git submodule update --init --force --recursive
+      - uses: actions/cache@v1
+        with:
+          path: ~/.gradle
+          key: gradle-${{ hashFiles('**/build.gradle.kts', '**/gradle-wrapper.properties') }}
+      - uses: actions/setup-java@v1
+        with:
+          java-version: 11
+      - name: Run Gradle Build
+        run: |
+          ./gradlew classes

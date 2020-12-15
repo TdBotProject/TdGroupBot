@@ -31,7 +31,15 @@ class SimpleAntiSpamHandler : TdHandler() {
         initFunction("_del_me")
     }
 
-    override suspend fun onFunction(userId: Int, chatId: Long, message: TdApi.Message, function: String, param: String, params: Array<String>, originParams: Array<String>) {
+    override suspend fun onFunction(
+        userId: Int,
+        chatId: Long,
+        message: TdApi.Message,
+        function: String,
+        param: String,
+        params: Array<String>,
+        originParams: Array<String>
+    ) {
         if (!isUserAgentAvailable(chatId)) rejectFunction()
 
         userAgent!!.deleteChatMessagesFromUser(chatId, userId)
@@ -65,17 +73,27 @@ class SimpleAntiSpamHandler : TdHandler() {
         if (userFirstMessage.value == null) {
             if (isUserAgentAvailable(chatId)) {
                 try {
-                    val userMessages = searchChatMessages(chatId, "", TdApi.MessageSenderUser(userId), 0, 0, 100, TdApi.SearchMessagesFilterEmpty(), 0)
+                    val userMessages = searchChatMessages(
+                        chatId,
+                        "",
+                        TdApi.MessageSenderUser(userId),
+                        0,
+                        0,
+                        100,
+                        TdApi.SearchMessagesFilterEmpty(),
+                        0
+                    )
                     isFirstMessage = userMessages.messages.none { !it.isServiceMessage && it.date < message.date }
                     if (!isFirstMessage) {
-                        userFirstMessage.set(userMessages.messages.filter { !it.isServiceMessage }.minByOrNull { it.date }!!.date)
+                        userFirstMessage.set(userMessages.messages.filter { !it.isServiceMessage }
+                            .minByOrNull { it.date }!!.date)
                     }
                 } catch (e: TdException) {
                     defaultLog.warn(e)
                 }
             }
         } else {
-            isFirstMessage = userFirstMessage.value!! - message.date > 3 * 60 * 60
+            isFirstMessage = message.date - userFirstMessage.value!! > 3 * 60 * 60
         }
 
         if (userFirstMessage.value == null) {
@@ -87,11 +105,17 @@ class SimpleAntiSpamHandler : TdHandler() {
 
         suspend fun exec(): Nothing {
             when (action) {
-                1 -> setChatMemberStatus(chatId, userId, TdApi.ChatMemberStatusRestricted(
+                1 -> setChatMemberStatus(
+                    chatId, userId, TdApi.ChatMemberStatusRestricted(
                         true, 0, TdApi.ChatPermissions()
-                ))
+                    )
+                )
                 2 -> setChatMemberStatus(chatId, userId, TdApi.ChatMemberStatusBanned())
-                3 -> setChatMemberStatus(chatId, userId, TdApi.ChatMemberStatusBanned(((SystemClock.now() + 1 * Minutes) / 1000).toInt()))
+                3 -> setChatMemberStatus(
+                    chatId,
+                    userId,
+                    TdApi.ChatMemberStatusBanned(((SystemClock.now() + 1 * Minutes) / 1000).toInt())
+                )
             }
             if (isUserAgentAvailable(chatId)) with(userAgent!!) {
                 reportSupergroupSpam(chatId.toSupergroupId, userId, longArrayOf(message.id))
@@ -107,7 +131,11 @@ class SimpleAntiSpamHandler : TdHandler() {
             if (content.document.fileName.matches(virusAbs)) exec()
         } else if (content is TdApi.MessageContact) {
             exec()
-        } else if (message.forwardInfo != null && message.textOrCaption != null && message.textOrCaption!!.count { CharUtil.isEmoji(it) } > 2) {
+        } else if (message.forwardInfo != null && message.textOrCaption != null && message.textOrCaption!!.count {
+                CharUtil.isEmoji(
+                    it
+                )
+            } > 2) {
             exec()
         }
 

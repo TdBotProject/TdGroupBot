@@ -1,6 +1,6 @@
 BOT_TOKEN:
 B0T_OWNER:
-USER_AGENT: none
+USER_AGENT:
 SPAM_WATCH_API_KEY:
 REPORT_URL: https://t.me/TdBotProject
 
