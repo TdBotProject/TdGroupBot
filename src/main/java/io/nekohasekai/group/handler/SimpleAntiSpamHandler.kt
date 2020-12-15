@@ -3,7 +3,9 @@ package io.nekohasekai.group.handler
 import cn.hutool.core.date.SystemClock
 import cn.hutool.core.util.CharUtil
 import io.nekohasekai.group.database.UserFirstMessage.FirstMessageMap
-import io.nekohasekai.group.exts.*
+import io.nekohasekai.group.exts.global
+import io.nekohasekai.group.exts.isUserAgentAvailable
+import io.nekohasekai.group.exts.userAgent
 import io.nekohasekai.ktlib.core.defaultLog
 import io.nekohasekai.ktlib.td.cli.database
 import io.nekohasekai.ktlib.td.core.TdException
@@ -12,7 +14,10 @@ import io.nekohasekai.ktlib.td.core.raw.*
 import io.nekohasekai.ktlib.td.extensions.*
 import io.nekohasekai.ktlib.td.utils.delete
 import io.nekohasekai.ktlib.td.utils.isChatAdmin
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import td.TdApi
 
 /**
@@ -71,7 +76,7 @@ class SimpleAntiSpamHandler : TdHandler() {
         val userFirstMessage = userFirstMessageMap.fetch(chatId.toSupergroupId to userId)
 
         if (userFirstMessage.value == null) {
-            if (isUserAgentAvailable(chatId)) {
+            if (isUserAgentAvailable(chatId)) with(userAgent!!) {
                 try {
                     val userMessages = searchChatMessages(
                         chatId,
@@ -83,7 +88,8 @@ class SimpleAntiSpamHandler : TdHandler() {
                         TdApi.SearchMessagesFilterEmpty(),
                         0
                     )
-                    isFirstMessage = userMessages.messages.none { !it.isServiceMessage && it.date < message.date }
+                    isFirstMessage =
+                        userMessages.messages.none { !it.isServiceMessage && message.date - it.date > 3 * 60 * 60 }
                     if (!isFirstMessage) {
                         userFirstMessage.set(userMessages.messages.filter { !it.isServiceMessage }
                             .minByOrNull { it.date }!!.date)
