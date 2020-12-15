@@ -7,6 +7,7 @@ object GroupConfigs : IdTable<Long>("group_config") {
     val groupId = long("group_id").entityId()
     val cmMode = integer("cm_mode").default(0)
 
+    val deleteServiceMessages = integer("delete_service_messages").default(0)
     val simpleAs = integer("simple_as").default(0)
     val spamWatch = integer("spam_watch").default(0)
 

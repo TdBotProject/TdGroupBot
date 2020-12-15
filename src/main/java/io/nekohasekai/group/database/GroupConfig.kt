@@ -8,6 +8,7 @@ class GroupConfig(id: EntityID<Long>) : Entity<Long>(id) {
 
     var cmMode by GroupConfigs.cmMode
 
+    var deleteServiceMessages by GroupConfigs.deleteServiceMessages
     var simpleAs by GroupConfigs.simpleAs
     var spamWatch by GroupConfigs.spamWatch
 

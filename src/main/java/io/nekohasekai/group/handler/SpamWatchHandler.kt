@@ -2,11 +2,18 @@ package io.nekohasekai.group.handler
 
 import cn.hutool.cache.impl.LFUCache
 import cn.hutool.core.date.SystemClock
-import io.nekohasekai.group.*
-import io.nekohasekai.group.exts.*
+import io.nekohasekai.group.MODES
+import io.nekohasekai.group.REPORT
+import io.nekohasekai.group.SW_INLIST
+import io.nekohasekai.group.exts.global
+import io.nekohasekai.group.exts.htmlInlineMentionSafe
+import io.nekohasekai.group.exts.isUserAgentAvailable
+import io.nekohasekai.group.exts.userAgent
 import io.nekohasekai.ktlib.core.input
 import io.nekohasekai.ktlib.td.core.TdHandler
-import io.nekohasekai.ktlib.td.core.raw.*
+import io.nekohasekai.ktlib.td.core.raw.deleteChatMessagesFromUser
+import io.nekohasekai.ktlib.td.core.raw.getUser
+import io.nekohasekai.ktlib.td.core.raw.setChatMemberStatus
 import io.nekohasekai.ktlib.td.extensions.Hours
 import io.nekohasekai.ktlib.td.extensions.Minutes
 import io.nekohasekai.ktlib.td.i18n.localeFor
@@ -57,6 +64,8 @@ class SpamWatchHandler : TdHandler() {
 
     override suspend fun onNewMessage(userId: Int, chatId: Long, message: TdApi.Message) {
 
+        if (message.content !is TdApi.JoinChatByInviteLink) return
+
         val config = global.groupConfigs.fetch(chatId).value?.takeIf { it.spamWatch > 0 } ?: return
 
         if (userId == 0 || isChatAdmin(chatId, userId)) return
@@ -64,7 +73,8 @@ class SpamWatchHandler : TdHandler() {
         val record = readRecord(userId).takeIf { it.isSpam } ?: return
 
         when (config.spamWatch) {
-            1 -> setChatMemberStatus(chatId, userId, TdApi.ChatMemberStatusRestricted(
+            1 -> setChatMemberStatus(
+                chatId, userId, TdApi.ChatMemberStatusRestricted(
                     true, 0, TdApi.ChatPermissions()
             ))
             2 -> setChatMemberStatus(chatId, userId, TdApi.ChatMemberStatusBanned())

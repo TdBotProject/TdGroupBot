@@ -1,7 +1,10 @@
 package io.nekohasekai.group.manage
 
 import cn.hutool.core.util.NumberUtil
-import io.nekohasekai.group.*
+import io.nekohasekai.group.FN_INVALID_PARAM
+import io.nekohasekai.group.FN_MISSING_ACTION
+import io.nekohasekai.group.FN_SETTING_UPDATED
+import io.nekohasekai.group.FN_UNKNOWN_ACTION
 import io.nekohasekai.group.database.GroupConfig
 import io.nekohasekai.group.exts.global
 import io.nekohasekai.ktlib.td.cli.database
@@ -10,7 +13,10 @@ import io.nekohasekai.ktlib.td.extensions.fromPrivate
 import io.nekohasekai.ktlib.td.extensions.fromSuperGroup
 import io.nekohasekai.ktlib.td.i18n.FN_SUPER_GROUP_ONLY
 import io.nekohasekai.ktlib.td.i18n.localeFor
-import io.nekohasekai.ktlib.td.utils.*
+import io.nekohasekai.ktlib.td.utils.checkChatAdmin
+import io.nekohasekai.ktlib.td.utils.deleteDelayIf
+import io.nekohasekai.ktlib.td.utils.make
+import io.nekohasekai.ktlib.td.utils.makeHtml
 import td.TdApi
 
 class OptionsFunction : TdHandler() {
@@ -21,7 +27,15 @@ class OptionsFunction : TdHandler() {
 
     }
 
-    override suspend fun onFunction(userId: Int, chatId: Long, message: TdApi.Message, function: String, param: String, params: Array<String>, originParams: Array<String>) {
+    override suspend fun onFunction(
+        userId: Int,
+        chatId: Long,
+        message: TdApi.Message,
+        function: String,
+        param: String,
+        params: Array<String>,
+        originParams: Array<String>
+    ) {
 
         if (!NumberUtil.isLong(param) && !message.fromSuperGroup) {
 
@@ -36,7 +50,10 @@ class OptionsFunction : TdHandler() {
 
         if (param.isBlank()) {
 
-            sudo make localeFor(targetChat, userId).FN_MISSING_ACTION onSuccess deleteDelayIf(!message.fromPrivate, message) replyTo message
+            sudo make localeFor(targetChat, userId).FN_MISSING_ACTION onSuccess deleteDelayIf(
+                !message.fromPrivate,
+                message
+            ) replyTo message
 
             return
 
@@ -51,9 +68,10 @@ class OptionsFunction : TdHandler() {
         }
 
         val intOptions = arrayOf(
-                "cm_mode",
-                "simple_as",
-                "spam_watch"
+            "cm_mode",
+            "simple_as",
+            "spam_watch",
+            "del_serv_msgs"
         )
 
         val action = params[0]
@@ -63,7 +81,10 @@ class OptionsFunction : TdHandler() {
             val newMode = try {
                 params[1].toInt()
             } catch (e: Exception) {
-                sudo make localeFor(targetChat, userId).FN_INVALID_PARAM onSuccess deleteDelayIf(!message.fromPrivate, message) replyTo message
+                sudo make localeFor(targetChat, userId).FN_INVALID_PARAM onSuccess deleteDelayIf(
+                    !message.fromPrivate,
+                    message
+                ) replyTo message
                 return
             }
 
@@ -86,11 +107,20 @@ class OptionsFunction : TdHandler() {
                     }
                     config.notifyChanged()
                 }
+                3 -> if (cache.deleteServiceMessages != newMode) {
+                    database.write {
+                        cache.deleteServiceMessages = newMode
+                    }
+                    config.notifyChanged()
+                }
             }
 
         } else {
 
-            sudo make localeFor(targetChat, userId).FN_UNKNOWN_ACTION onSuccess deleteDelayIf(!message.fromPrivate, message) replyTo message
+            sudo make localeFor(targetChat, userId).FN_UNKNOWN_ACTION onSuccess deleteDelayIf(
+                !message.fromPrivate,
+                message
+            ) replyTo message
             return
 
         }

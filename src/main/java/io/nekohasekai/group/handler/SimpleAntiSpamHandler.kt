@@ -143,7 +143,7 @@ class SimpleAntiSpamHandler : TdHandler() {
             exec()
         }
 
-        val isSafe = (content is TdApi.MessageText &&
+        val isSafe = content is TdApi.MessageText &&
                 content.text.entities.none {
                     when (it.type) {
                         is TdApi.TextEntityTypeUrl,
@@ -152,7 +152,7 @@ class SimpleAntiSpamHandler : TdHandler() {
                         else -> false
                     }
                 } &&
-                content.text.text.count { CharUtil.isEmoji(it) } < 3)
+                content.text.text.count { CharUtil.isEmoji(it) } == 0
 
         if (!isSafe) {
             sudo delete message
