@@ -25,7 +25,6 @@ internal val L.AS_ALERT by string
 internal val L.SW_INLIST by string
 internal val L.MODES by string
 internal val L.REPORT by string
-internal val L.REPORT_BOT_CHECK by string
 internal val L.FN_MISSING_ACTION by string
 internal val L.FN_UNKNOWN_ACTION by string
 internal val L.FN_INVALID_PARAM by string

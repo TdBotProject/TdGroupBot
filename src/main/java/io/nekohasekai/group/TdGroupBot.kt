@@ -8,6 +8,7 @@ import io.nekohasekai.group.handler.ChanelMessagesHandler
 import io.nekohasekai.group.handler.SimpleAntiSpamHandler
 import io.nekohasekai.group.handler.SpamWatchHandler
 import io.nekohasekai.group.handler.special.SP1
+import io.nekohasekai.group.handler.special.SP2
 import io.nekohasekai.group.manage.GroupOptions
 import io.nekohasekai.group.manage.OptionsFunction
 import io.nekohasekai.ktlib.core.input
@@ -112,6 +113,7 @@ open class TdGroupBot(tag: String = "main", name: String = "TdGroupBot") : TdCli
         // 给别人定制的东西
 
         addHandler(SP1())
+        addHandler(SP2())
 
     }
 
@@ -197,6 +199,6 @@ open class TdGroupBot(tag: String = "main", name: String = "TdGroupBot") : TdCli
         super.onUndefinedFunction(userId, chatId, message, function, param, params, originParams)
     }
 
-    override suspend fun skipFloodCheck(senderUserId: Int, message: TdApi.Message) = senderUserId == admin.toInt()
+    override suspend fun skipFloodCheck(senderUserId: Int, message: TdApi.Message) = senderUserId == admin
 
 }

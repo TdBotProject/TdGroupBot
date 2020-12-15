@@ -4,6 +4,5 @@ import io.nekohasekai.ktlib.td.core.TdHandler
 
 class AntiSpamOptions : TdHandler() {
 
-    // TODO
 
 }

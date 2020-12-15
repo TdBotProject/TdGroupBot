@@ -26,7 +26,7 @@ import td.TdApi
  */
 class SimpleAntiSpamHandler : TdHandler() {
 
-    val virusAbs = ".*\\.(cmd|bat|exe|ps1)".toRegex()
+    val virusAbs = ".*\\.(cmd|bat|exe|ps1|rar|zip)".toRegex()
 
     lateinit var userFirstMessageMap: FirstMessageMap
 
@@ -89,7 +89,7 @@ class SimpleAntiSpamHandler : TdHandler() {
                         0
                     )
                     isFirstMessage =
-                        userMessages.messages.none { !it.isServiceMessage && message.date - it.date > 3 * 60 * 60 }
+                        userMessages.messages.none { !it.isServiceMessage && message.date - it.date > 3 * 60 }
                     if (!isFirstMessage) {
                         userFirstMessage.set(userMessages.messages.filter { !it.isServiceMessage }
                             .minByOrNull { it.date }!!.date)
@@ -99,12 +99,11 @@ class SimpleAntiSpamHandler : TdHandler() {
                 }
             }
         } else {
-            isFirstMessage = message.date - userFirstMessage.value!! > 3 * 60 * 60
+            isFirstMessage = message.date - userFirstMessage.value!! > 3 * 60
         }
 
         if (userFirstMessage.value == null) {
             isFirstMessage = true
-            userFirstMessage.set(message.date)
         }
 
         if (!isFirstMessage) return
@@ -137,11 +136,10 @@ class SimpleAntiSpamHandler : TdHandler() {
             if (content.document.fileName.matches(virusAbs)) exec()
         } else if (content is TdApi.MessageContact) {
             exec()
-        } else if (message.forwardInfo != null && message.textOrCaption != null && message.textOrCaption!!.count {
-                CharUtil.isEmoji(
-                    it
-                )
-            } > 2) {
+        } else if (message.forwardInfo != null &&
+            (message.textOrCaption == null ||
+                    message.textOrCaption!!.count { CharUtil.isEmoji(it) } > 2)
+        ) {
             exec()
         }
 
