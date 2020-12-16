@@ -106,6 +106,7 @@ class SP2 : TdHandler() {
 
         if (isUserAgentAvailable(chatId)) with(userAgent!!) {
             var isFirstMessage = true
+            getUser(userId)
             try {
                 val userMessages = searchChatMessages(
                     chatId,

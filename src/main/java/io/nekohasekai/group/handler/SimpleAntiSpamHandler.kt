@@ -78,6 +78,7 @@ class SimpleAntiSpamHandler : TdHandler() {
         if (userFirstMessage.value == null) {
             if (isUserAgentAvailable(chatId)) with(userAgent!!) {
                 try {
+                    getUser(userId)
                     val userMessages = searchChatMessages(
                         chatId,
                         "",
@@ -97,13 +98,11 @@ class SimpleAntiSpamHandler : TdHandler() {
                 } catch (e: TdException) {
                     defaultLog.warn(e)
                 }
+            } else {
+                isFirstMessage = true
             }
         } else {
             isFirstMessage = message.date - userFirstMessage.value!! > 3 * 60
-        }
-
-        if (userFirstMessage.value == null) {
-            isFirstMessage = true
         }
 
         if (!isFirstMessage) return
