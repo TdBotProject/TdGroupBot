@@ -26,6 +26,17 @@ tasks.withType<Jar> {
     }
 }
 
+distributions {
+    main {
+        distributionBaseName.set("main")
+        contents.rename {
+            if (it == project.name ||
+                it.startsWith(project.name) && it.endsWith("bat")
+            ) it.replace(project.name, "main") else it
+        }
+    }
+}
+
 val compileKotlin: KotlinCompile by tasks
 
 compileKotlin.kotlinOptions {

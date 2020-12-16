@@ -1,6 +1,9 @@
 BOT_TOKEN:
 B0T_OWNER:
 USER_AGENT:
+USER_AGENT_PUBLIC: false
+USER_AGENT_REQUEST_URL: https://t.me/TdBotProjectTicketBot
+
 SPAM_WATCH_API_KEY:
 REPORT_URL: https://t.me/TdBotProject
 
