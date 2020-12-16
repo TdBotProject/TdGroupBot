@@ -26,6 +26,8 @@ internal val L.AS_INFO by string
 internal val L.MENU_AS_SIMPLE by string
 internal val L.MENU_SPAM_WARCH by string
 internal val L.SIMPLE_AS_INFO by string
+internal val L.MENU_USER_AGENT by string
+internal val L.UA_INFO by string
 internal val L.SW_INFO by string
 internal val L.SW_INLIST by string
 internal val L.MODES by string

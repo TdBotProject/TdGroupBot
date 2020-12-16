@@ -31,8 +31,8 @@ class GroupOptions : TdHandler() {
     }
 
     fun def() = TdApi.BotCommand(
-            "options",
-            clientLocale.OPTIONS_DEF
+        "options",
+        clientLocale.OPTIONS_DEF
     )
 
     override fun onLoad() {
@@ -45,12 +45,13 @@ class GroupOptions : TdHandler() {
 
         sudo addHandler ChannelMessagesOptions()
         sudo addHandler AntiSpamOptions()
+        sudo addHandler DeleteServiceMessagesOptions()
 
     }
 
     class PreSession(
-            val chatId: Long,
-            val fromMessage: Long
+        val chatId: Long,
+        val fromMessage: Long
     )
 
     val preSessions = LFUCache<Int, PreSession>(-1, 3 * 60 * 1000L)
@@ -61,7 +62,15 @@ class GroupOptions : TdHandler() {
 
     }
 
-    override suspend fun onFunction(userId: Int, chatId: Long, message: TdApi.Message, function: String, param: String, params: Array<String>, originParams: Array<String>) {
+    override suspend fun onFunction(
+        userId: Int,
+        chatId: Long,
+        message: TdApi.Message,
+        function: String,
+        param: String,
+        params: Array<String>,
+        originParams: Array<String>
+    ) {
 
         if (!NumberUtil.isLong(param) && !message.fromSuperGroup) {
 
@@ -86,9 +95,12 @@ class GroupOptions : TdHandler() {
 
         }
 
-        if (!hasRequiredPermission(targetChat, me.id,
-                        canDeleteMessages = true,
-                        canPinMessages = true)) {
+        if (!hasRequiredPermission(
+                targetChat, me.id,
+                canDeleteMessages = true,
+                canPinMessages = true
+            )
+        ) {
 
             sudo makeMd localeFor(userId).BOT_NOT_ADMIN replyTo message
 
@@ -116,7 +128,13 @@ class GroupOptions : TdHandler() {
 
     }
 
-    override suspend fun onNewCallbackQuery(userId: Int, chatId: Long, messageId: Long, queryId: Long, data: Array<ByteArray>) {
+    override suspend fun onNewCallbackQuery(
+        userId: Int,
+        chatId: Long,
+        messageId: Long,
+        queryId: Long,
+        data: Array<ByteArray>
+    ) {
 
         val action = data[0][0].toInt()
 
@@ -168,6 +186,14 @@ class GroupOptions : TdHandler() {
                 data.shift(),
                 action
             )
+            5 -> findHandler<DeleteServiceMessagesOptions>().onOptionsCallbackQuery(
+                userId,
+                chatId,
+                messageId,
+                queryId,
+                targetChat,
+                data.shift()
+            )
         }
 
     }
@@ -192,6 +218,7 @@ class GroupOptions : TdHandler() {
 
             dataLine(L.MENU_CHANNEL_MESSAGE, DATA_ID, ChannelMessagesOptions.SUB_ID)
             dataLine(L.MENU_ANTI_SPAM, DATA_ID, AntiSpamOptions.SUB_ID)
+            dataLine(L.MENU_DELETE_SERVICE_MESSAGES, DATA_ID, DeleteServiceMessagesOptions.SUB_ID)
 
         } onSuccess {
             if (!isEdit) {
@@ -202,7 +229,13 @@ class GroupOptions : TdHandler() {
 
     }
 
-    override suspend fun onStartPayload(userId: Int, chatId: Long, message: TdApi.Message, payload: String, params: Array<String>) {
+    override suspend fun onStartPayload(
+        userId: Int,
+        chatId: Long,
+        message: TdApi.Message,
+        payload: String,
+        params: Array<String>
+    ) {
 
         val targetChat = preSessions.get(userId)
 

@@ -3,8 +3,6 @@ package io.nekohasekai.group.manage
 import io.nekohasekai.group.*
 import io.nekohasekai.group.database.GroupConfig
 import io.nekohasekai.group.exts.global
-import io.nekohasekai.group.exts.userAgent
-import io.nekohasekai.ktlib.core.input
 import io.nekohasekai.ktlib.core.toStatusString
 import io.nekohasekai.ktlib.td.cli.database
 import io.nekohasekai.ktlib.td.core.TdHandler
@@ -37,16 +35,19 @@ class AntiSpamOptions : TdHandler() {
 
         if (subId == 2) {
 
+            sudo confirmTo queryId
+
             sudo make L.AS_INFO withMarkup inlineButton {
                 dataLine(L.MENU_AS_SIMPLE, GroupOptions.DATA_ID, SIMPLE_AS)
                 dataLine(L.MENU_SPAM_WARCH, GroupOptions.DATA_ID, SPAM_WATCH)
                 dataLine(L.BACK_ARROW, GroupOptions.DATA_ID, GroupOptions.BACK)
             } at messageId editTo chatId
 
-            sudo confirmTo queryId
             return
 
         }
+
+        sudo makeAnswer L.FN_SETTING_UPDATED answerTo queryId
 
         val config = global.groupConfigs.fetch(targetChat)
         val cache = config.value ?: database.write {
@@ -56,7 +57,7 @@ class AntiSpamOptions : TdHandler() {
         if (subId == 3) {
 
             if (data.isEmpty()) {
-                sudo makeMd L.SIMPLE_AS_INFO.input(userAgent?.me?.username ?: "<Not Configured>") withMarkup mkButtons(
+                sudo makeMd L.SIMPLE_AS_INFO withMarkup mkButtons(
                     userId,
                     cache.simpleAs
                 ) at messageId editTo chatId
@@ -93,9 +94,6 @@ class AntiSpamOptions : TdHandler() {
             sudo makeInlineButton mkButtons(userId, cache.spamWatch) at messageId editTo chatId
 
         }
-
-        sudo makeAnswer L.FN_SETTING_UPDATED answerTo queryId
-
 
     }
 

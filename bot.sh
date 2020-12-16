@@ -148,9 +148,7 @@ elif [ "$1" == "log" ]; then
 
   exec journalctl -u $SERVICE_NAME -o short --no-hostname -f -n 40
 
-elif
-  [ "$1" == "logs" ]
-then
+elif [ "$1" == "logs" ]; then
 
   exec journalctl -u $SERVICE_NAME -o short --no-hostname --no-tail -e
 
