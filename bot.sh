@@ -8,6 +8,8 @@ MODULE="bot"
 SERVICE_NAME="td-group"
 JAVA_ARGS=""
 ARGS=""
+CONFIG_TEMPLATE="_group.yml"
+CONFIG_FILE="group.yml"
 
 [ -f "bot.conf" ] && source "bot.conf"
 # --------------------------- #
@@ -59,6 +61,12 @@ EOF
   echo "<< 完毕."
 
   exit
+
+elif [ "$1" == "config" ]; then
+
+  [ -f $CONFIG_FILE ] || cp $CONFIG_TEMPLATE $CONFIG_FILE
+
+  editor $CONFIG_FILE
 
 elif [ "$1" == "run" ]; then
 

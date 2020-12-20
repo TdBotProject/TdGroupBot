@@ -11,13 +11,12 @@ import io.nekohasekai.ktlib.td.cli.database
 import io.nekohasekai.ktlib.td.core.TdException
 import io.nekohasekai.ktlib.td.core.TdHandler
 import io.nekohasekai.ktlib.td.core.raw.*
-import io.nekohasekai.ktlib.td.extensions.*
+import io.nekohasekai.ktlib.td.extensions.Minutes
+import io.nekohasekai.ktlib.td.extensions.isServiceMessage
+import io.nekohasekai.ktlib.td.extensions.textOrCaption
+import io.nekohasekai.ktlib.td.extensions.toSupergroupId
 import io.nekohasekai.ktlib.td.utils.delete
 import io.nekohasekai.ktlib.td.utils.isChatAdmin
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import td.TdApi
 
 /**
@@ -57,19 +56,7 @@ class SimpleAntiSpamHandler : TdHandler() {
 
         val action = (global.groupConfigs.fetch(chatId).value?.takeIf { it.simpleAs != 0 } ?: return).simpleAs
 
-        if (message.isServiceMessage) {
-            if (message.content is TdApi.MessageChatJoinByLink) {
-                GlobalScope.launch(Dispatchers.IO) {
-                    delay(1000L)
-                    if (!getChatMember(chatId, userId).isMember) sudo delete message
-                }
-            }
-            return
-        }
-
         val content = message.content
-
-        // 首次加入检查
 
         var isFirstMessage = false
 
