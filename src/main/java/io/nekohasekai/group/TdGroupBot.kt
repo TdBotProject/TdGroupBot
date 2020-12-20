@@ -9,7 +9,6 @@ import io.nekohasekai.group.handler.DeleteServiceMessagesHandler
 import io.nekohasekai.group.handler.SimpleAntiSpamHandler
 import io.nekohasekai.group.handler.SpamWatchHandler
 import io.nekohasekai.group.handler.special.SP1
-import io.nekohasekai.group.handler.special.SP2
 import io.nekohasekai.group.manage.GroupOptions
 import io.nekohasekai.group.manage.OptionsFunction
 import io.nekohasekai.ktlib.core.input
@@ -79,9 +78,9 @@ open class TdGroupBot(tag: String = "main", name: String = "TdGroupBot") : TdCli
         database.write {
 
             forceCreateTables(
-                    OptionMessages,
-                    GroupConfigs,
-                    UserFirstMessage
+                OptionMessages,
+                GroupConfigs,
+                UserFirstMessage
             )
 
         }
@@ -103,7 +102,6 @@ open class TdGroupBot(tag: String = "main", name: String = "TdGroupBot") : TdCli
         })
 
         addHandler(GetIdCommand())
-
         addHandler(GroupOptions())
         addHandler(OptionsFunction())
 
@@ -115,7 +113,6 @@ open class TdGroupBot(tag: String = "main", name: String = "TdGroupBot") : TdCli
         // 给别人定制的东西
 
         addHandler(SP1())
-        addHandler(SP2())
 
     }
 
@@ -154,10 +151,10 @@ open class TdGroupBot(tag: String = "main", name: String = "TdGroupBot") : TdCli
     override suspend fun onLogin() {
 
         upsertCommands(
-                // findHandler<LocaleSwitcher>().def(),
-                findHandler<GroupOptions>().def(),
-                HELP_COMMAND,
-                CANCEL_COMMAND
+            // findHandler<LocaleSwitcher>().def(),
+            findHandler<GroupOptions>().def(),
+            HELP_COMMAND,
+            CANCEL_COMMAND
         )
 
         scheduleGcAndOptimize()
@@ -186,7 +183,15 @@ open class TdGroupBot(tag: String = "main", name: String = "TdGroupBot") : TdCli
 
     }
 
-    override suspend fun onFunction(userId: Int, chatId: Long, message: TdApi.Message, function: String, param: String, params: Array<String>, originParams: Array<String>) {
+    override suspend fun onFunction(
+        userId: Int,
+        chatId: Long,
+        message: TdApi.Message,
+        function: String,
+        param: String,
+        params: Array<String>,
+        originParams: Array<String>
+    ) {
 
         val L = localeFor(userId)
 
@@ -194,7 +199,15 @@ open class TdGroupBot(tag: String = "main", name: String = "TdGroupBot") : TdCli
 
     }
 
-    override suspend fun onUndefinedFunction(userId: Int, chatId: Long, message: TdApi.Message, function: String, param: String, params: Array<String>, originParams: Array<String>) {
+    override suspend fun onUndefinedFunction(
+        userId: Int,
+        chatId: Long,
+        message: TdApi.Message,
+        function: String,
+        param: String,
+        params: Array<String>,
+        originParams: Array<String>
+    ) {
         if (!message.fromPrivate) {
             rejectFunction()
         }
