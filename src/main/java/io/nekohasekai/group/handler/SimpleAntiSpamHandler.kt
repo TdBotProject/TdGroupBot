@@ -74,7 +74,7 @@ class SimpleAntiSpamHandler : TdHandler() {
         val action = (global.groupConfigs.fetch(chatId).value?.takeIf { it.simpleAs != 0 } ?: return).simpleAs
         val content = message.content
 
-        var isFirstMessage = false
+        var isFirstMessage = true
         val userFirstMessage = userFirstMessageMap.fetch(chatId.toSupergroupId to userId)
 
         if (userFirstMessage.value == null) {
@@ -91,13 +91,13 @@ class SimpleAntiSpamHandler : TdHandler() {
                         0
                     )
                 ) { messages ->
-                    val foundMsg = messages.find { !it.isServiceMessage && message.date - it.date < 3 * 60 }
+                    val foundMsg = messages.find { !it.isServiceMessage && message.date - it.date > 3 * 60 }
                     if (foundMsg != null) {
                         isFirstMessage = false
                         userFirstMessage.set(foundMsg.date)
                         status["firstMessage"] = "found"
                     }
-                    foundMsg == null
+                    messages.isNotEmpty() && foundMsg == null
                 }
             } else {
                 status["firstMessage"] = "noAgent"
@@ -161,11 +161,10 @@ class SimpleAntiSpamHandler : TdHandler() {
                         else -> false
                     }
                 } &&
-                content.text.text.count { CharUtil.isEmoji(it) } < 2 ||
-                content is TdApi.MessageSticker
+                content.text.text.count { CharUtil.isEmoji(it) } < 3
 
         if (!isSafe) {
-            status["result"] = "unsafe"
+            status["result"] = "delete"
             sudo delete message
         } else {
             status["result"] = "safe"
