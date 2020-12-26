@@ -29,7 +29,7 @@ MENU_CM_HELP: |-
 
   Repost and delete: delete after forwarding, that is, keep the message and disable the comment button.
 CM_MODE_UNPIN: |-
-  UNpin
+  Unpin
 CM_MODE_DELETE: |-
   Delete
 CM_MODE_REPOST_AND_DELETE: |-
