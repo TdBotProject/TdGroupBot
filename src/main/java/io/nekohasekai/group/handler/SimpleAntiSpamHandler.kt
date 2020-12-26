@@ -68,7 +68,6 @@ class SimpleAntiSpamHandler : TdHandler() {
     suspend fun process(userId: Int, chatId: Long, message: TdApi.Message, status: LinkedHashMap<String, String>) {
 
         if (userId == 0 || isChatAdmin(chatId, userId) || message.isServiceMessage) {
-            status["result"] = "notMsg"
             return
         }
         val action = (global.groupConfigs.fetch(chatId).value?.takeIf { it.simpleAs != 0 } ?: return).simpleAs
