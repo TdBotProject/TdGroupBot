@@ -45,7 +45,7 @@ class FirstMessageHandler : TdHandler() {
         val userFirstMessage = userFirstMessageMap.fetch(chatId.toSupergroupId to userId)
 
         if (userFirstMessage.value == null) true else {
-            message.date - userFirstMessage.value!! < 3 * 60
+            message.date - userFirstMessage.value!! < 5
         }.takeIf { it } ?: return
 
         if (sudo.handlers.filterIsInstance<Interface>().all {

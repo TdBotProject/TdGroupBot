@@ -46,7 +46,7 @@ SIMPLE_AS_INFO: |-
   Simple anti-spam processing
 
   **Current rules**
-  - Ignore statements other than Article 1
+  - Ignore non-first
   + Do not count service messages
   + After receiving the first message after the bot joins the group, it is marked as having spoken
 
@@ -54,6 +54,7 @@ SIMPLE_AS_INFO: |-
   + Executable or compressed file
   + Contact
   + Forward message, and no text or multiple emojis
+  - Srickers
   + Non-plain text (delete only)
 
   **About message deletion**
