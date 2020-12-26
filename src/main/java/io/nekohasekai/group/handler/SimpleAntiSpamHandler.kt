@@ -52,59 +52,16 @@ class SimpleAntiSpamHandler : TdHandler() {
 
     override suspend fun onNewMessage(userId: Int, chatId: Long, message: TdApi.Message) {
 
-        if (userId == 0 || isChatAdmin(chatId, userId) || message.isServiceMessage) {
-            if (userId == 0) log.trace("userId == 0")
-            else if (isChatAdmin(chatId, userId)) log.trace("skip admin message")
-            return
-        }
-
+        if (userId == 0 || isChatAdmin(chatId, userId) || message.isServiceMessage) return
         val config = global.groupConfigs.fetch(chatId).value
-
-        if (config == null || config.simpleAs == 0) {
-            log.trace("disabled")
-            return
-        }
-
+        if (config == null || config.simpleAs == 0) return
         val action = config.simpleAs
         val content = message.content
-
-        var isFirstMessage = true
         val userFirstMessage = userFirstMessageMap.fetch(chatId.toSupergroupId to userId)
 
-        if (userFirstMessage.value == null) {
-            if (isUserAgentAvailable(chatId)) with(userAgent!!) {
-                log.trace("search message logs")
-                fetchMessages(
-                    TdApi.SearchChatMessages(
-                        chatId,
-                        "",
-                        TdApi.MessageSenderUser(userId),
-                        0,
-                        0,
-                        100,
-                        TdApi.SearchMessagesFilterEmpty(),
-                        0
-                    )
-                ) { messages ->
-                    val foundMsg = messages.find { !it.isServiceMessage && message.date - it.date > 3 * 60 }
-                    if (foundMsg != null) {
-                        isFirstMessage = false
-                        userFirstMessage.set(foundMsg.date)
-                        log.trace("message found")
-                    }
-                    messages.isNotEmpty() && foundMsg == null
-                }
-            } else {
-                isFirstMessage = true
-            }
-        } else {
-            isFirstMessage = message.date - userFirstMessage.value!! < 3 * 60
-        }
-
-        if (!isFirstMessage) {
-            log.trace("skip non-first message")
-            return
-        }
+        if (userFirstMessage.value == null) true else {
+            message.date - userFirstMessage.value!! < 3 * 60
+        }.takeIf { it } ?: return
 
         suspend fun exec(): Nothing {
             when (action) {
@@ -132,17 +89,14 @@ class SimpleAntiSpamHandler : TdHandler() {
 
         if (content is TdApi.MessageDocument) {
             if (content.document.fileName.matches(virusAbs)) {
-                log.trace("bad file detected")
                 exec()
             }
         } else if (content is TdApi.MessageContact) {
-            log.trace("contact detected")
             exec()
         } else if (message.forwardInfo != null &&
             (message.textOrCaption == null ||
                     message.textOrCaption!!.count { CharUtil.isEmoji(it) } > 2)
         ) {
-            log.trace("forward detected")
             exec()
         }
 
@@ -151,10 +105,8 @@ class SimpleAntiSpamHandler : TdHandler() {
                 content.text.text.count { CharUtil.isEmoji(it) } < 2
 
         if (!isSafe) {
-            log.trace("bad message detected")
             sudo delete message
         } else {
-            log.trace("message safe")
             userFirstMessage.set(message.date)
         }
 

@@ -4,10 +4,7 @@ import io.nekohasekai.group.database.GroupConfig
 import io.nekohasekai.group.database.GroupConfigs
 import io.nekohasekai.group.database.OptionMessages
 import io.nekohasekai.group.database.UserFirstMessage
-import io.nekohasekai.group.handler.ChanelMessagesHandler
-import io.nekohasekai.group.handler.DeleteServiceMessagesHandler
-import io.nekohasekai.group.handler.SimpleAntiSpamHandler
-import io.nekohasekai.group.handler.SpamWatchHandler
+import io.nekohasekai.group.handler.*
 import io.nekohasekai.group.handler.special.SP1
 import io.nekohasekai.group.manage.GroupOptions
 import io.nekohasekai.group.manage.OptionsFunction
@@ -111,6 +108,7 @@ open class TdGroupBot(tag: String = "main", name: String = "TdGroupBot") : TdCli
         addHandler(SimpleAntiSpamHandler())
         addHandler(SpamWatchHandler())
         addHandler(DeleteServiceMessagesHandler())
+        addHandler(MemberPolicyHandler())
 
         // 给别人定制的东西
 
