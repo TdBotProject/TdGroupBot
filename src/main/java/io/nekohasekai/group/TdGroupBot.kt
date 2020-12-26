@@ -153,7 +153,7 @@ open class TdGroupBot(tag: String = "main", name: String = "TdGroupBot") : TdCli
     override suspend fun onLogin() {
 
         upsertCommands(
-            // findHandler<LocaleSwitcher>().def(),
+            findHandler<LocaleSwitcher>().def(),
             findHandler<GroupOptions>().def(),
             HELP_COMMAND,
             CANCEL_COMMAND
@@ -175,13 +175,13 @@ open class TdGroupBot(tag: String = "main", name: String = "TdGroupBot") : TdCli
 
         val L = localeFor(userId)
 
-//        if (LocaleStore.localeRead(chatId) == null) {
-//
-//            findHandler<LocaleSwitcher>().startSelect(L, chatId, true)
-//
-//            return
-//
-//        }
+        if (LocaleStore.localeRead(chatId) == null) {
+
+            findHandler<LocaleSwitcher>().startSelect(L, chatId, true)
+
+            return
+
+        }
 
         sudo makeHtml L.LICENSE.input(repoName, licenseUrl, "Github Repo".htmlLink(repoUrl)) syncTo chatId
 

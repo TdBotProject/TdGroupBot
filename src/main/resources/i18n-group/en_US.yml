@@ -1,5 +1,5 @@
 HELP_MSG: |-
-  This robot can help you manage groups.
+  This bot can help you manage groups.
 
   You can control me by sending the following commands:
 
@@ -48,7 +48,7 @@ SIMPLE_AS_INFO: |-
   **Current rules**
   - Ignore statements other than Article 1
   + Do not count service messages
-  + After receiving the first message after the robot joins the group, it is marked as having spoken
+  + After receiving the first message after the bot joins the group, it is marked as having spoken
 
   **Message content processing**
   + Executable or compressed file
@@ -66,7 +66,7 @@ MENU_USER_AGENT: |-
   Configure user agent
 UA_INFO: |-
   **About User Agent**
-    The user agent is used to access interfaces that the robot cannot access, such as:
+    The user agent is used to access interfaces that the bot cannot access, such as:
     - Delete user's all messages
     - Report message
     - Search user history
@@ -84,9 +84,9 @@ SW_INLIST: |
   Action: {}
 MODES: Don't process|Mute|Ban|Kick
 REPORT: |-
-  反馈
+  Report
 MENU_DELETE_SERVICE_MESSAGES: |-
-  服务消息管理
+  Service messages deletion
 DSM_INFO: |-
   You can configure me to selectively or delete all service messages in your group.
 DSM_JOIN: |-
