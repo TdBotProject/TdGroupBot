@@ -21,15 +21,11 @@ import io.nekohasekai.ktlib.td.utils.fetchMessages
 import io.nekohasekai.ktlib.td.utils.isChatAdmin
 import td.TdApi
 
-/**
- * 机器人检查
- * 由于诸多检查, 不应被删除服务消息覆盖.
- */
 class SimpleAntiSpamHandler : TdHandler() {
 
     val log = mkLog("AntiSpam")
 
-    val virusAbs = ".*\\.(cmd|bat|exe|ps1|rar|zip)".toRegex()
+    val virusAbs = ".*\\.(cmd|bat|exe|ps1|rar|zip|lha|lzh)".toRegex()
 
     lateinit var userFirstMessageMap: FirstMessageMap
 
@@ -99,12 +95,10 @@ class SimpleAntiSpamHandler : TdHandler() {
                     messages.isNotEmpty() && foundMsg == null
                 }
             } else {
-                log.trace("agent not available")
                 isFirstMessage = true
             }
         } else {
             isFirstMessage = message.date - userFirstMessage.value!! < 3 * 60
-            log.trace("record found")
         }
 
         if (!isFirstMessage) {
@@ -148,7 +142,7 @@ class SimpleAntiSpamHandler : TdHandler() {
             (message.textOrCaption == null ||
                     message.textOrCaption!!.count { CharUtil.isEmoji(it) } > 2)
         ) {
-            log.trace("forwared detected")
+            log.trace("forward detected")
             exec()
         }
 
