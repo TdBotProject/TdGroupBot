@@ -39,7 +39,7 @@ class SpamWatchHandler : TdHandler(), FirstMessageHandler.Interface {
 
     companion object {
         val checkResult = LFUCache<Int, CheckResult>(-1, 3 * Hours)
-        const val functionCheckSelf = "_sw_check_me"
+        const val functionCheckSelf = "_sw_check"
     }
 
     lateinit var spamWatch: SpamWatch

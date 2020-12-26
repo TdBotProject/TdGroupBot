@@ -1,5 +1,6 @@
 package io.nekohasekai.spamwatch.models;
 
+@SuppressWarnings("unused")
 public class Version {
 
     public String major;

@@ -2,7 +2,9 @@
 
 package io.nekohasekai.spamwatch
 
-import cn.hutool.http.*
+import cn.hutool.http.HttpRequest
+import cn.hutool.http.HttpResponse
+import cn.hutool.http.HttpUtil
 import cn.hutool.json.JSONObject
 import com.google.gson.Gson
 import io.nekohasekai.spamwatch.models.BanRecord
@@ -22,9 +24,7 @@ class SpamWatch private constructor(configuration: Builder) {
             .header("Authorization", "Bearer $apiKey")
 
     private fun checkResponse(response: HttpResponse) {
-
         if (!response.isOk) checkJSON(response, Unit::class.java)
-
     }
 
     private fun <T> checkJSON(response: HttpResponse, clazz: Class<T>): T {
