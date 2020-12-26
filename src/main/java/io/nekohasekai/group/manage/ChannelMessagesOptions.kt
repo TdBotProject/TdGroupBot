@@ -22,11 +22,49 @@ class ChannelMessagesOptions : TdHandler() {
 
     }
 
-    fun cmMenu(userId: Int, chatId: Long, messageId: Long, targetChat: Long, isEdit: Boolean) {
+    suspend fun onOptionsCallbackQuery(
+        userId: Int,
+        chatId: Long,
+        messageId: Long,
+        queryId: Long,
+        targetChat: Long,
+        data: Array<ByteArray>
+    ) {
 
-        val L = localeFor(userId)
+        sudo confirmTo queryId
 
-        sudo make L.MENU_CM_HELP withMarkup cmButtons(userId, targetChat) at messageId edit isEdit sendOrEditTo chatId
+        if (data.isEmpty()) {
+
+            val L = localeFor(userId)
+
+            sudo make L.MENU_CM_HELP withMarkup cmButtons(userId, targetChat) at messageId editTo chatId
+
+            return
+
+        }
+
+        val config = global.groupConfigs.fetch(targetChat)
+
+        val cache = config.value ?: database.write {
+
+            GroupConfig.new(targetChat, {}).also { config.set(it) }
+
+        }
+
+        val newMode = data[0][0].toInt()
+
+        if (cache.cmMode != newMode) {
+
+            database.write {
+
+                cache.cmMode = newMode
+                config.notifyChanged()
+
+            }
+
+        }
+
+        sudo makeInlineButton cmButtons(userId, targetChat) at messageId editTo chatId
 
     }
 
@@ -41,14 +79,24 @@ class ChannelMessagesOptions : TdHandler() {
             newLine {
 
                 dataButton(L.CM_MODE_ASIS, -1)
-                dataButton((config?.cmMode ?: 0 == 0).toStatusString(true), GroupOptions.DATA_ID, SUB_ID, byteArrayOf(1))
+                dataButton(
+                    (config?.cmMode ?: 0 == 0).toStatusString(true),
+                    GroupOptions.DATA_ID,
+                    SUB_ID,
+                    byteArrayOf(0)
+                )
 
             }
 
             newLine {
 
                 dataButton(L.CM_MODE_UNPIN, -1)
-                dataButton((config?.cmMode ?: 0 == 3).toStatusString(true), GroupOptions.DATA_ID, SUB_ID, byteArrayOf(4))
+                dataButton(
+                    (config?.cmMode ?: 0 == 3).toStatusString(true),
+                    GroupOptions.DATA_ID,
+                    SUB_ID,
+                    byteArrayOf(1)
+                )
 
             }
 
@@ -70,43 +118,6 @@ class ChannelMessagesOptions : TdHandler() {
             dataLine(L.BACK_ARROW, GroupOptions.DATA_ID, GroupOptions.BACK)
 
         }
-
-    }
-
-    suspend fun onOptionsCallbackQuery(userId: Int, chatId: Long, messageId: Long, queryId: Long, targetChat: Long, data: Array<ByteArray>) {
-
-        sudo confirmTo queryId
-
-        if (data.isEmpty()) {
-
-            cmMenu(userId, chatId, messageId, targetChat, true)
-
-            return
-
-        }
-
-        val config = global.groupConfigs.fetch(targetChat)
-
-        val cache = config.value ?: database.write {
-
-            GroupConfig.new(targetChat, {}).also { config.set(it) }
-
-        }
-
-        val newMode = data[0][0].toInt() - 1
-
-        if (cache.cmMode != newMode) {
-
-            database.write {
-
-                cache.cmMode = newMode
-                config.notifyChanged()
-
-            }
-
-        }
-
-        sudo makeInlineButton cmButtons(userId, targetChat) at messageId editTo chatId
 
     }
 

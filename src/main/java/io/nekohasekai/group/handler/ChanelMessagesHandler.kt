@@ -32,14 +32,6 @@ class ChanelMessagesHandler : TdHandler() {
 
         val content = message.content
 
-        if (userId == me.id && content is TdApi.MessagePinMessage) {
-
-            sudo delete message
-
-            return
-
-        }
-
         if (message.senderChatId == 0L || message.senderChatId == message.chatId) return
 
         val mediaAlbumId = message.mediaAlbumId
