@@ -5,7 +5,6 @@ import io.nekohasekai.group.database.GroupConfig
 import io.nekohasekai.group.exts.global
 import io.nekohasekai.ktlib.core.toStatusString
 import io.nekohasekai.ktlib.td.cli.database
-import io.nekohasekai.ktlib.td.core.TdHandler
 import io.nekohasekai.ktlib.td.i18n.BACK_ARROW
 import io.nekohasekai.ktlib.td.i18n.localeFor
 import io.nekohasekai.ktlib.td.utils.*
@@ -77,7 +76,7 @@ class DeleteServiceMessagesOptions : GroupOptions.Handler() {
 
             newLine {
 
-                dataButton(L.DSM_JOIN_BY_LINK_ONLY, -1)
+                dataButton(L.DSM_JOIN, -1)
                 dataButton(
                     (config?.deleteServiceMessages ?: 0 == 1).toStatusString(true),
                     GroupOptions.DATA_ID,

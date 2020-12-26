@@ -5,7 +5,6 @@ import io.nekohasekai.group.database.GroupConfig
 import io.nekohasekai.group.exts.global
 import io.nekohasekai.ktlib.core.toStatusString
 import io.nekohasekai.ktlib.td.cli.database
-import io.nekohasekai.ktlib.td.core.TdHandler
 import io.nekohasekai.ktlib.td.i18n.BACK_ARROW
 import io.nekohasekai.ktlib.td.i18n.localeFor
 import io.nekohasekai.ktlib.td.utils.confirmTo
@@ -68,7 +67,7 @@ class ChannelMessagesOptions : GroupOptions.Handler() {
 
             newLine {
 
-                dataButton(L.CM_MODE_ASIS, -1)
+                dataButton(L.MODES.split("|")[0], -1)
                 dataButton(
                     (config?.cmMode ?: 0 == 0).toStatusString(true),
                     GroupOptions.DATA_ID,
@@ -100,7 +99,7 @@ class ChannelMessagesOptions : GroupOptions.Handler() {
 
             newLine {
 
-                dataButton(L.CM_MODE_FORWARD_AND_DELETE, -1)
+                dataButton(L.CM_MODE_REPOST_AND_DELETE, -1)
                 dataButton((config?.cmMode == 2).toStatusString(true), GroupOptions.DATA_ID, SUB_ID, byteArrayOf(3))
 
             }

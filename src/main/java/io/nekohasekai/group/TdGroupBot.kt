@@ -33,7 +33,7 @@ import java.io.File
 
 open class TdGroupBot(tag: String = "main", name: String = "TdGroupBot") : TdCli(tag, name) {
 
-    override val localeList = arrayOf("zh_CN")
+    override val localeList = arrayOf("en_US", "zh_CN")
 
     companion object : TdGroupBot() {
 
@@ -103,6 +103,8 @@ open class TdGroupBot(tag: String = "main", name: String = "TdGroupBot") : TdCli
         addHandler(GetIdCommand())
         addHandler(GroupOptions())
         addHandler(OptionsFunction())
+
+        addHandler(FirstMessageHandler())
 
         addHandler(ChanelMessagesHandler())
         addHandler(SimpleAntiSpamHandler())

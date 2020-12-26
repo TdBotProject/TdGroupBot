@@ -33,7 +33,7 @@ class MemberPolicyHandler : TdHandler() {
                 setChatMemberStatus(
                     chatId,
                     userId,
-                    TdApi.ChatMemberStatusBanned((System.currentTimeMillis() / 1000).toInt() + 1 * 60)
+                    TdApi.ChatMemberStatusBanned((System.currentTimeMillis() / 1000).toInt())
                 )
             } else if (content is TdApi.MessageChatAddMembers) {
                 sudo delete message
@@ -41,7 +41,7 @@ class MemberPolicyHandler : TdHandler() {
                     setChatMemberStatus(
                         chatId,
                         memberUserId,
-                        TdApi.ChatMemberStatusBanned((System.currentTimeMillis() / 1000).toInt() + 1 * 60)
+                        TdApi.ChatMemberStatusBanned((System.currentTimeMillis() / 1000).toInt())
                     )
                 }
             }

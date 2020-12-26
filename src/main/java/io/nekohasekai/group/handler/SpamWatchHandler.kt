@@ -1,10 +1,10 @@
 package io.nekohasekai.group.handler
 
 import cn.hutool.cache.impl.LFUCache
-import cn.hutool.core.date.SystemClock
 import io.nekohasekai.group.MODES
 import io.nekohasekai.group.REPORT
 import io.nekohasekai.group.SW_INLIST
+import io.nekohasekai.group.database.GroupConfig
 import io.nekohasekai.group.exts.global
 import io.nekohasekai.group.exts.htmlInlineMentionSafe
 import io.nekohasekai.group.exts.isUserAgentAvailable
@@ -13,7 +13,6 @@ import io.nekohasekai.ktlib.core.input
 import io.nekohasekai.ktlib.td.core.TdHandler
 import io.nekohasekai.ktlib.td.core.raw.deleteChatMessagesFromUser
 import io.nekohasekai.ktlib.td.core.raw.getUser
-import io.nekohasekai.ktlib.td.core.raw.setChatMemberStatus
 import io.nekohasekai.ktlib.td.extensions.Hours
 import io.nekohasekai.ktlib.td.extensions.Minutes
 import io.nekohasekai.ktlib.td.i18n.localeFor
@@ -23,7 +22,7 @@ import io.nekohasekai.spamwatch.SpamWatchException
 import io.nekohasekai.spamwatch.models.BanRecord
 import td.TdApi
 
-class SpamWatchHandler : TdHandler() {
+class SpamWatchHandler : TdHandler(), FirstMessageHandler.Interface {
 
     class CheckResult(val isSpam: Boolean) {
         var record: BanRecord? = null
@@ -62,24 +61,15 @@ class SpamWatchHandler : TdHandler() {
         checkResult.put(userId, it)
     }
 
-    override suspend fun onNewMessage(userId: Int, chatId: Long, message: TdApi.Message) {
+    override suspend fun onFirstMessage(
+        userId: Int,
+        chatId: Long,
+        message: TdApi.Message,
+        config: GroupConfig
+    ): Boolean {
 
-        if (message.content !is TdApi.JoinChatByInviteLink) return
-
-        val config = global.groupConfigs.fetch(chatId).value?.takeIf { it.spamWatch > 0 } ?: return
-
-        if (userId == 0 || isChatAdmin(chatId, userId)) return
-
-        val record = readRecord(userId).takeIf { it.isSpam } ?: return
-
-        when (config.spamWatch) {
-            1 -> setChatMemberStatus(
-                chatId, userId, TdApi.ChatMemberStatusRestricted(
-                    true, 0, TdApi.ChatPermissions()
-            ))
-            2 -> setChatMemberStatus(chatId, userId, TdApi.ChatMemberStatusBanned())
-            3 -> setChatMemberStatus(chatId, userId, TdApi.ChatMemberStatusBanned(((SystemClock.now() + 1 * Minutes) / 1000).toInt()))
-        }
+        val action = config.spamWatch.takeIf { it > 0 } ?: return false
+        val record = readRecord(userId).takeIf { it.isSpam } ?: return false
 
         if (isUserAgentAvailable(chatId)) with(userAgent!!) {
             deleteChatMessagesFromUser(chatId, userId)
@@ -87,17 +77,25 @@ class SpamWatchHandler : TdHandler() {
             sudo delete message
         }
 
+        when (action) {
+            1 -> muteMember(chatId, userId)
+            2 -> banChatMember(chatId, userId)
+            3 -> kickMember(chatId, userId)
+        }
+
         val L = localeFor(chatId)
 
         sudo makeHtml L.SW_INLIST.input(
-                getUser(userId).htmlInlineMentionSafe,
-                record.record!!.reason,
-                L.MODES.split("|")[config.spamWatch]
+            getUser(userId).htmlInlineMentionSafe,
+            record.record!!.reason,
+            L.MODES.split("|")[config.spamWatch]
         ) withMarkup inlineButton {
             newLine {
                 urlButton(L.REPORT, global.reportUrl)
             }
         } onSuccess deleteDelay(timeMs = 3 * Minutes) syncTo chatId
+
+        return true
 
     }
 

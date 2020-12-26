@@ -17,10 +17,9 @@ internal val L.MENU_SWITCH_BUTTON by string
 internal val L.OPTIONS_MENU by string
 internal val L.MENU_CHANNEL_MESSAGE by string
 internal val L.MENU_CM_HELP by string
-internal val L.CM_MODE_ASIS by string
 internal val L.CM_MODE_UNPIN by string
 internal val L.CM_MODE_DELETE by string
-internal val L.CM_MODE_FORWARD_AND_DELETE by string
+internal val L.CM_MODE_REPOST_AND_DELETE by string
 internal val L.MENU_ANTI_SPAM by string
 internal val L.AS_INFO by string
 internal val L.MENU_AS_SIMPLE by string
@@ -34,7 +33,7 @@ internal val L.MODES by string
 internal val L.REPORT by string
 internal val L.MENU_DELETE_SERVICE_MESSAGES by string
 internal val L.DSM_INFO by string
-internal val L.DSM_JOIN_BY_LINK_ONLY by string
+internal val L.DSM_JOIN by string
 internal val L.DSM_USER_ABOUT by string
 internal val L.DSM_DEL_ALL by string
 internal val L.MENU_MEMBER_POLICY by string

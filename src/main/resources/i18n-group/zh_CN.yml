@@ -9,7 +9,7 @@ HELP_MSG: |-
 OPTIONS_DEF: |-
   打开管理菜单
 BOT_NOT_ADMIN: |-
-  机器人不是群组管理员, 请授予 **删除消息** 与 **置顶** 权限.
+  请授予本机器人 **删除消息** 与 **置顶** 权限.
 SESSION_TIMEOUT: |-
   会话过期, 请重新打开设置.
 MENU_SWITCH_PM: |-
@@ -28,13 +28,11 @@ MENU_CM_HELP: |-
   由机器人删除消息即可禁用评论按钮.
 
   复制与删除: 转发后再删除, 即保留消息同时禁用评论按钮.
-CM_MODE_ASIS: |-
-  不处理
 CM_MODE_UNPIN: |-
   取消置顶
 CM_MODE_DELETE: |-
   删除
-CM_MODE_FORWARD_AND_DELETE: |-
+CM_MODE_REPOST_AND_DELETE: |-
   复制与删除
 MENU_ANTI_SPAM: |-
   反广告
@@ -61,10 +59,10 @@ SIMPLE_AS_INFO: |-
     - 仅处理接收到的消息
 
   **消息内容处理**
-  + 如果为可执行文件或压缩包 -> 判定
-  + 如果为名片 -> 判定
-  + 如果为转发, 且没有文本或包含多个 Emoji -> 判定
-  + 如果不为纯文本 -> 仅删除
+  + 可执行文件或压缩包
+  + 名片
+  + 转发, 且没有文本或包含多个 Emoji
+  + 不为纯文本 (仅删除)
 
   **关于消息删除**
   + 删除后用户将被标记为未发言
@@ -99,8 +97,8 @@ MENU_DELETE_SERVICE_MESSAGES: |-
   服务消息管理
 DSM_INFO: |-
   您可以配置本机器人以选择性或删除所有服务消息在您的群组中.
-DSM_JOIN_BY_LINK_ONLY: |-
-  仅删除通过链接加入
+DSM_JOIN: |-
+  仅删除成员加入
 DSM_USER_ABOUT: |-
   删除成员相关
 DSM_DEL_ALL: |-

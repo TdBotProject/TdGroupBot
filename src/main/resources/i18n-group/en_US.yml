@@ -1,0 +1,113 @@
+HELP_MSG: |-
+  This robot can help you manage groups.
+
+  You can control me by sending the following commands:
+
+  /options - Open the management menu
+
+  If you need help, please contact us via @TdBotProject 's discussion group.
+OPTIONS_DEF: |-
+  Open settings menu
+BOT_NOT_ADMIN: |-
+  Please grant me **delete messages** and **sticky** permissions.
+SESSION_TIMEOUT: |-
+  The session expired, please reopen the settings.
+MENU_SWITCH_PM: |-
+  Please click the button below to switch to PM for setting, if you see the "Start" button, please click it.
+MENU_SWITCH_BUTTON: |-
+  Open Setings
+OPTIONS_MENU: |-
+  Settings of group  **{}**
+
+  __Select the menu you want to change.__
+MENU_CHANNEL_MESSAGE: |-
+  频道消息管理
+MENU_CM_HELP: |-
+  As the discussion group, control the messages from the channel.
+
+  The comment button can be disabled by deleting the message by the bot.
+
+  Repost and delete: delete after forwarding, that is, keep the message and disable the comment button.
+CM_MODE_UNPIN: |-
+  UNpin
+CM_MODE_DELETE: |-
+  Delete
+CM_MODE_REPOST_AND_DELETE: |-
+  Repost and delete
+MENU_ANTI_SPAM: |-
+  Anti Spam
+AS_INFO: |-
+  Simple anti spam rule :)
+MENU_AS_SIMPLE: |-
+  Simple Anti Spam
+MENU_SPAM_WARCH: |-
+  Spam Watch Intergation
+SIMPLE_AS_INFO: |-
+  Simple anti-spam processing
+
+  **Current rules**
+  - Ignore statements other than Article 1
+  + Do not count service messages
+  + After receiving the first message after the robot joins the group, it is marked as having spoken
+
+  **Message content processing**
+  + Executable or compressed file
+  + Contact
+  + Forward message, and no text or multiple emojis
+  + Non-plain text (delete only)
+
+  **About message deletion**
+  + After deletion, the user will be marked as unspoken
+
+  In addition, you can subscribe to @TdBotProject to get notification of rule updates :)
+
+  You can choose the action to be performed when the check is hit:
+MENU_USER_AGENT: |-
+  Configure user agent
+UA_INFO: |-
+  **About User Agent**
+    The user agent is used to access interfaces that the robot cannot access, such as:
+    - Delete user's all messages
+    - Report message
+    - Search user history
+    - Wait...
+    If you set the user agent of this project as a group manager, additional functions are available.
+    Due to the limited number of groups that users can join and multi-agent has not yet been implemented, you need to [apply]({}) to use user agent.
+SW_INFO: |-
+  @SpamWatch is a well-known centralized advertising blacklist. If you enable this interface, me will ask they to check when the user speaks for the first time.
+
+  You can choose the action to be performed when the check is hit:
+SW_INLIST: |
+  {} In the SpamWatch block list:
+
+  Reason: {}
+  Action: {}
+MODES: Don't process|Mute|Ban|Kick
+REPORT: |-
+  反馈
+MENU_DELETE_SERVICE_MESSAGES: |-
+  服务消息管理
+DSM_INFO: |-
+  You can configure me to selectively or delete all service messages in your group.
+DSM_JOIN: |-
+  Delete join
+DSM_USER_ABOUT: |-
+  Delete user related
+DSM_DEL_ALL: |-
+  Delete all
+
+MENU_MEMBER_POLICY: |-
+  Member Policy
+MP_INFO: |-
+  You can use this to prohibit users from joining your channel's discussion group, or must join before commenting (delete the message after the prompt, and delete it regularly)
+MP_KICK: |-
+  Remove new member
+MP_REQUIRE_JOIN: |-
+  Delete non-member comment
+MP_DEL_WARN: |-
+  {}, please join the discussion group of this channel before commenting.
+
+FN_MISSING_ACTION: Missing action.
+FN_UNKNOWN_ACTION: Unknown action.
+FN_INVALID_PARAM: Invalid Paramter.
+FN_SETTING_UPDATED: Setting updated.
