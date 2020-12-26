@@ -14,21 +14,20 @@ import io.nekohasekai.ktlib.td.utils.make
 import io.nekohasekai.ktlib.td.utils.makeInlineButton
 import td.TdApi
 
-class ChannelMessagesOptions : TdHandler() {
+class ChannelMessagesOptions : GroupOptions.Handler() {
 
     companion object {
-
         val SUB_ID = byteArrayOf(1)
-
     }
 
-    suspend fun onOptionsCallbackQuery(
+    override suspend fun onOptionsCallbackQuery(
         userId: Int,
         chatId: Long,
         messageId: Long,
         queryId: Long,
         targetChat: Long,
-        data: Array<ByteArray>
+        data: Array<ByteArray>,
+        subId: Int
     ) {
 
         sudo confirmTo queryId
@@ -36,7 +35,6 @@ class ChannelMessagesOptions : TdHandler() {
         if (data.isEmpty()) {
 
             val L = localeFor(userId)
-
             sudo make L.MENU_CM_HELP withMarkup cmButtons(userId, targetChat) at messageId editTo chatId
 
             return
@@ -44,24 +42,16 @@ class ChannelMessagesOptions : TdHandler() {
         }
 
         val config = global.groupConfigs.fetch(targetChat)
-
         val cache = config.value ?: database.write {
-
             GroupConfig.new(targetChat, {}).also { config.set(it) }
-
         }
 
         val newMode = data[0][0].toInt()
-
         if (cache.cmMode != newMode) {
-
             database.write {
-
                 cache.cmMode = newMode
                 config.notifyChanged()
-
             }
-
         }
 
         sudo makeInlineButton cmButtons(userId, targetChat) at messageId editTo chatId

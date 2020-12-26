@@ -46,6 +46,7 @@ class GroupOptions : TdHandler() {
         sudo addHandler ChannelMessagesOptions()
         sudo addHandler AntiSpamOptions()
         sudo addHandler DeleteServiceMessagesOptions()
+        sudo addHandler MemberPolicyOptions()
 
     }
 
@@ -164,38 +165,38 @@ class GroupOptions : TdHandler() {
 
         }
 
-        when (action) {
-            0 -> {
-                sudo confirmTo queryId
-                startSet(userId, chatId, messageId, targetChat, true)
-            }
-            1 -> findHandler<ChannelMessagesOptions>().onOptionsCallbackQuery(
-                userId,
-                chatId,
-                messageId,
-                queryId,
-                targetChat,
-                data.shift()
-            )
-            in 2..4 -> findHandler<AntiSpamOptions>().onOptionsCallbackQuery(
-                userId,
-                chatId,
-                messageId,
-                queryId,
-                targetChat,
-                data.shift(),
-                action
-            )
-            5 -> findHandler<DeleteServiceMessagesOptions>().onOptionsCallbackQuery(
-                userId,
-                chatId,
-                messageId,
-                queryId,
-                targetChat,
-                data.shift()
-            )
-        }
+        if (action == 0) {
+            sudo confirmTo queryId
+            startSet(userId, chatId, messageId, targetChat, true)
+        } else when (action) {
+            1 -> findHandler<ChannelMessagesOptions>()
+            in 2..4 -> findHandler<AntiSpamOptions>()
+            5 -> findHandler<DeleteServiceMessagesOptions>()
+            6 -> findHandler<MemberPolicyOptions>()
+            else -> throw IllegalStateException()
+        }.onOptionsCallbackQuery(
+            userId,
+            chatId,
+            messageId,
+            queryId,
+            targetChat,
+            data.shift(),
+            action
+        )
 
+    }
+
+    abstract class Handler : TdHandler() {
+
+        abstract suspend fun onOptionsCallbackQuery(
+            userId: Int,
+            chatId: Long,
+            messageId: Long,
+            queryId: Long,
+            targetChat: Long,
+            data: Array<ByteArray>,
+            subId: Int
+        )
     }
 
     suspend fun startSet(userId: Int, chatId: Long, messageId: Long, targetChat: Long, isEdit: Boolean) {
@@ -219,6 +220,7 @@ class GroupOptions : TdHandler() {
             dataLine(L.MENU_CHANNEL_MESSAGE, DATA_ID, ChannelMessagesOptions.SUB_ID)
             dataLine(L.MENU_ANTI_SPAM, DATA_ID, AntiSpamOptions.SUB_ID)
             dataLine(L.MENU_DELETE_SERVICE_MESSAGES, DATA_ID, DeleteServiceMessagesOptions.SUB_ID)
+            dataLine(L.MENU_MEMBER_POLICY, DATA_ID, MemberPolicyOptions.SUB_ID)
 
         } onSuccess {
             if (!isEdit) {

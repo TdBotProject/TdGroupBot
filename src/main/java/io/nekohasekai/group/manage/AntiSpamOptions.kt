@@ -11,7 +11,7 @@ import io.nekohasekai.ktlib.td.i18n.localeFor
 import io.nekohasekai.ktlib.td.utils.*
 import td.TdApi
 
-class AntiSpamOptions : TdHandler() {
+class AntiSpamOptions : GroupOptions.Handler() {
 
     companion object {
 
@@ -21,7 +21,7 @@ class AntiSpamOptions : TdHandler() {
 
     }
 
-    suspend fun onOptionsCallbackQuery(
+    override suspend fun onOptionsCallbackQuery(
         userId: Int,
         chatId: Long,
         messageId: Long,

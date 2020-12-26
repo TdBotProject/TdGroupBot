@@ -11,7 +11,7 @@ import io.nekohasekai.ktlib.td.i18n.localeFor
 import io.nekohasekai.ktlib.td.utils.*
 import td.TdApi
 
-class DeleteServiceMessagesOptions : TdHandler() {
+class DeleteServiceMessagesOptions : GroupOptions.Handler() {
 
     companion object {
 
@@ -19,13 +19,14 @@ class DeleteServiceMessagesOptions : TdHandler() {
 
     }
 
-    suspend fun onOptionsCallbackQuery(
+    override suspend fun onOptionsCallbackQuery(
         userId: Int,
         chatId: Long,
         messageId: Long,
         queryId: Long,
         targetChat: Long,
-        data: Array<ByteArray>
+        data: Array<ByteArray>,
+        subId: Int
     ) {
 
         val L = localeFor(userId)
@@ -58,7 +59,6 @@ class DeleteServiceMessagesOptions : TdHandler() {
     fun dsButtons(userId: Int, targetChat: Long): TdApi.ReplyMarkupInlineKeyboard {
 
         val L = localeFor(userId)
-
         val config = global.groupConfigs.fetch(targetChat).value
 
         return inlineButton {
