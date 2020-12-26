@@ -106,6 +106,17 @@ DSM_USER_ABOUT: |-
 DSM_DEL_ALL: |-
   删除所有
 
+MENU_MEMBER_POLICY: |-
+  成员规则
+MP_INFO: |-
+  您可通过此功能禁止用户加入您频道的讨论群, 或要求评论前必须加入.
+MP_KICK: |-
+  移除新成员
+MP_REQUIRE_JOIN: |-
+  删除非成员发言
+MP_DEL_WARN: |-
+  {}, 评论前请先加入本频道之讨论群组.
+
 FN_MISSING_ACTION: 缺少参数名.
 FN_UNKNOWN_ACTION: 未知参数.
 FN_INVALID_PARAM: 参数无效.

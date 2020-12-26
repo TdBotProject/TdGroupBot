@@ -65,7 +65,8 @@ class OptionsFunction : TdHandler() {
             "cm_mode",
             "simple_as",
             "spam_watch",
-            "del_serv"
+            "del_serv",
+            "mp"
         )
 
         val action = params[0]
@@ -104,6 +105,12 @@ class OptionsFunction : TdHandler() {
                 3 -> if (cache.deleteServiceMessages != newMode) {
                     database.write {
                         cache.deleteServiceMessages = newMode
+                    }
+                    config.notifyChanged()
+                }
+                4 -> if (cache.memberPolicy != newMode) {
+                    database.write {
+                        cache.memberPolicy = newMode
                     }
                     config.notifyChanged()
                 }

@@ -37,6 +37,11 @@ internal val L.DSM_INFO by string
 internal val L.DSM_JOIN_BY_LINK_ONLY by string
 internal val L.DSM_USER_ABOUT by string
 internal val L.DSM_DEL_ALL by string
+internal val L.MENU_MEMBER_POLICY by string
+internal val L.MP_INFO by string
+internal val L.MP_KICK by string
+internal val L.MP_REQUIRE_JOIN by string
+internal val L.MP_DEL_WARN by string
 internal val L.FN_MISSING_ACTION by string
 internal val L.FN_UNKNOWN_ACTION by string
 internal val L.FN_INVALID_PARAM by string

@@ -11,6 +11,8 @@ object GroupConfigs : IdTable<Long>("group_config") {
     val simpleAs = integer("simple_as").default(0)
     val spamWatch = integer("spam_watch").default(0)
 
+    val memberPolicy = integer("member_policy").default(0)
+
     override val id = groupId
     override val primaryKey = PrimaryKey(groupId, name = "id")
 

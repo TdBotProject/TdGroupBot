@@ -12,6 +12,8 @@ class GroupConfig(id: EntityID<Long>) : Entity<Long>(id) {
     var simpleAs by GroupConfigs.simpleAs
     var spamWatch by GroupConfigs.spamWatch
 
+    var memberPolicy by GroupConfigs.memberPolicy
+
     companion object : EntityClass<Long, GroupConfig>(GroupConfigs)
 
 }
