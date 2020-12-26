@@ -1,14 +1,11 @@
 package io.nekohasekai.group.manage
 
 import io.nekohasekai.group.*
-import io.nekohasekai.group.MODES
-import io.nekohasekai.group.MP_INFO
-import io.nekohasekai.group.MP_KICK
-import io.nekohasekai.group.MP_REQUIRE_JOIN
 import io.nekohasekai.group.database.GroupConfig
 import io.nekohasekai.group.exts.global
 import io.nekohasekai.ktlib.core.toStatusString
 import io.nekohasekai.ktlib.td.cli.database
+import io.nekohasekai.ktlib.td.i18n.BACK_ARROW
 import io.nekohasekai.ktlib.td.i18n.localeFor
 import io.nekohasekai.ktlib.td.utils.*
 import td.TdApi
@@ -93,6 +90,8 @@ class MemberPolicyOptions : GroupOptions.Handler() {
                 )
 
             }
+
+            dataLine(L.BACK_ARROW, GroupOptions.DATA_ID, GroupOptions.BACK)
 
         }
     }

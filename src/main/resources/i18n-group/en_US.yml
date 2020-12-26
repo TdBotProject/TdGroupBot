@@ -21,7 +21,7 @@ OPTIONS_MENU: |-
 
   __Select the menu you want to change.__
 MENU_CHANNEL_MESSAGE: |-
-  频道消息管理
+  Channel message management
 MENU_CM_HELP: |-
   As the discussion group, control the messages from the channel.
 

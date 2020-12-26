@@ -68,6 +68,7 @@ class ChannelMessagesOptions : GroupOptions.Handler() {
             newLine {
 
                 dataButton(L.MODES.split("|")[0], -1)
+
                 dataButton(
                     (config?.cmMode ?: 0 == 0).toStatusString(true),
                     GroupOptions.DATA_ID,
