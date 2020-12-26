@@ -6,7 +6,7 @@ import io.nekohasekai.group.database.UserFirstMessage.FirstMessageMap
 import io.nekohasekai.group.exts.global
 import io.nekohasekai.group.exts.isUserAgentAvailable
 import io.nekohasekai.group.exts.userAgent
-import io.nekohasekai.ktlib.core.defaultLog
+import io.nekohasekai.ktlib.core.mkLog
 import io.nekohasekai.ktlib.td.cli.database
 import io.nekohasekai.ktlib.td.core.TdHandler
 import io.nekohasekai.ktlib.td.core.raw.deleteChatMessagesFromUser
@@ -18,7 +18,6 @@ import io.nekohasekai.ktlib.td.extensions.textOrCaption
 import io.nekohasekai.ktlib.td.extensions.toSupergroupId
 import io.nekohasekai.ktlib.td.utils.delete
 import io.nekohasekai.ktlib.td.utils.fetchMessages
-import io.nekohasekai.ktlib.td.utils.formatMessage
 import io.nekohasekai.ktlib.td.utils.isChatAdmin
 import td.TdApi
 
@@ -27,6 +26,8 @@ import td.TdApi
  * 由于诸多检查, 不应被删除服务消息覆盖.
  */
 class SimpleAntiSpamHandler : TdHandler() {
+
+    val log = mkLog("AntiSpam")
 
     val virusAbs = ".*\\.(cmd|bat|exe|ps1|rar|zip)".toRegex()
 
@@ -55,22 +56,20 @@ class SimpleAntiSpamHandler : TdHandler() {
 
     override suspend fun onNewMessage(userId: Int, chatId: Long, message: TdApi.Message) {
 
-        val status = LinkedHashMap<String, String>()
-
-        process(userId, chatId, message, status)
-
-        if (status.isEmpty()) return
-
-        defaultLog.debug(formatMessage(message) + " (${status.map { it.key + ": " + it.value }.joinToString(", ")})")
-
-    }
-
-    suspend fun process(userId: Int, chatId: Long, message: TdApi.Message, status: LinkedHashMap<String, String>) {
-
         if (userId == 0 || isChatAdmin(chatId, userId) || message.isServiceMessage) {
+            if (userId == 0) log.trace("userId == 0")
+            else if (isChatAdmin(chatId, userId)) log.trace("skip admin message")
             return
         }
-        val action = (global.groupConfigs.fetch(chatId).value?.takeIf { it.simpleAs != 0 } ?: return).simpleAs
+
+        val config = global.groupConfigs.fetch(chatId).value
+
+        if (config == null || config.simpleAs == 0) {
+            log.trace("disabled")
+            return
+        }
+
+        val action = config.simpleAs
         val content = message.content
 
         var isFirstMessage = true
@@ -78,6 +77,7 @@ class SimpleAntiSpamHandler : TdHandler() {
 
         if (userFirstMessage.value == null) {
             if (isUserAgentAvailable(chatId)) with(userAgent!!) {
+                log.trace("search message logs")
                 fetchMessages(
                     TdApi.SearchChatMessages(
                         chatId,
@@ -94,22 +94,23 @@ class SimpleAntiSpamHandler : TdHandler() {
                     if (foundMsg != null) {
                         isFirstMessage = false
                         userFirstMessage.set(foundMsg.date)
-                        status["firstMessage"] = "found"
+                        log.trace("message found")
                     }
                     messages.isNotEmpty() && foundMsg == null
                 }
             } else {
-                status["firstMessage"] = "noAgent"
+                log.trace("agent not available")
                 isFirstMessage = true
             }
         } else {
             isFirstMessage = message.date - userFirstMessage.value!! < 3 * 60
-            status["firstMessage"] = "record"
+            log.trace("record found")
         }
 
-        status["isFirstMessage"] = "$isFirstMessage"
-
-        if (!isFirstMessage) return
+        if (!isFirstMessage) {
+            log.trace("skip non-first message")
+            return
+        }
 
         suspend fun exec(): Nothing {
             when (action) {
@@ -137,36 +138,29 @@ class SimpleAntiSpamHandler : TdHandler() {
 
         if (content is TdApi.MessageDocument) {
             if (content.document.fileName.matches(virusAbs)) {
-                status["result"] = "bad_file"
+                log.trace("bad file detected")
                 exec()
             }
         } else if (content is TdApi.MessageContact) {
-            status["result"] = "ad_contact"
+            log.trace("contact detected")
             exec()
         } else if (message.forwardInfo != null &&
             (message.textOrCaption == null ||
                     message.textOrCaption!!.count { CharUtil.isEmoji(it) } > 2)
         ) {
-            status["result"] = "forward"
+            log.trace("forwared detected")
             exec()
         }
 
         val isSafe = (content is TdApi.MessageText) &&
-                content.text.entities.none {
-                    when (it.type) {
-                        is TdApi.TextEntityTypeUrl,
-                        is TdApi.TextEntityTypeTextUrl,
-                        is TdApi.TextEntityTypeMention -> true
-                        else -> false
-                    }
-                } &&
-                content.text.text.count { CharUtil.isEmoji(it) } < 3
+                content.text.entities.isEmpty() &&
+                content.text.text.count { CharUtil.isEmoji(it) } < 2
 
         if (!isSafe) {
-            status["result"] = "delete"
+            log.trace("bad message detected")
             sudo delete message
         } else {
-            status["result"] = "safe"
+            log.trace("message safe")
             userFirstMessage.set(message.date)
         }
 
