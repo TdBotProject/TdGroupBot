@@ -11,6 +11,7 @@ import io.nekohasekai.group.handler.SpamWatchHandler
 import io.nekohasekai.group.handler.special.SP1
 import io.nekohasekai.group.manage.GroupOptions
 import io.nekohasekai.group.manage.OptionsFunction
+import io.nekohasekai.ktlib.core.defaultLog
 import io.nekohasekai.ktlib.core.input
 import io.nekohasekai.ktlib.db.IdTableCacheMap
 import io.nekohasekai.ktlib.db.forceCreateTables
@@ -25,6 +26,7 @@ import io.nekohasekai.ktlib.td.i18n.store.DatabaseLocaleStore
 import io.nekohasekai.ktlib.td.i18n.store.InMemoryLocaleStore
 import io.nekohasekai.ktlib.td.i18n.store.LocaleStore
 import io.nekohasekai.ktlib.td.utils.commands.GetIdCommand
+import io.nekohasekai.ktlib.td.utils.formatMessage
 import io.nekohasekai.ktlib.td.utils.makeHtml
 import io.nekohasekai.ktlib.td.utils.makeMd
 import io.nekohasekai.ktlib.td.utils.upsertCommands
@@ -159,6 +161,12 @@ open class TdGroupBot(tag: String = "main", name: String = "TdGroupBot") : TdCli
 
         scheduleGcAndOptimize()
 
+    }
+
+    override suspend fun onNewMessage(userId: Int, chatId: Long, message: TdApi.Message) {
+        defaultLog.trace(formatMessage(message))
+
+        super.onNewMessage(userId, chatId, message)
     }
 
     override suspend fun onLaunch(userId: Int, chatId: Long, message: TdApi.Message) {
