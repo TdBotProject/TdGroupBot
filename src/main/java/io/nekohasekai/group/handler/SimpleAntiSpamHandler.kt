@@ -1,6 +1,12 @@
 package io.nekohasekai.group.handler
 
 import cn.hutool.core.util.CharUtil
+import com.google.zxing.BarcodeFormat
+import com.google.zxing.BinaryBitmap
+import com.google.zxing.DecodeHintType
+import com.google.zxing.client.j2se.BufferedImageLuminanceSource
+import com.google.zxing.common.GlobalHistogramBinarizer
+import com.google.zxing.qrcode.QRCodeReader
 import io.nekohasekai.group.database.GroupConfig
 import io.nekohasekai.group.exts.isUserAgentAvailable
 import io.nekohasekai.group.exts.userAgent
@@ -11,17 +17,23 @@ import io.nekohasekai.ktlib.td.core.raw.reportSupergroupSpam
 import io.nekohasekai.ktlib.td.extensions.displayName
 import io.nekohasekai.ktlib.td.extensions.textOrCaption
 import io.nekohasekai.ktlib.td.extensions.toSupergroupId
-import io.nekohasekai.ktlib.td.utils.banChatMember
-import io.nekohasekai.ktlib.td.utils.delete
-import io.nekohasekai.ktlib.td.utils.kickMember
-import io.nekohasekai.ktlib.td.utils.muteMember
+import io.nekohasekai.ktlib.td.utils.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import td.TdApi
+import javax.imageio.ImageIO
 
 class SimpleAntiSpamHandler : TdHandler(), FirstMessageHandler.Interface {
 
     val log = mkLog("AntiSpam")
 
     val virusAbs = ".*\\.(cmd|bat|exe|ps1|rar|zip|lha|lzh)".toRegex()
+
+    companion object {
+
+        val decoder = QRCodeReader()
+
+    }
 
     override suspend fun onFirstMessage(
         userId: Int,
@@ -64,6 +76,36 @@ class SimpleAntiSpamHandler : TdHandler(), FirstMessageHandler.Interface {
         ) {
             log.trace("forward detected")
             exec()
+        }
+
+        if (content is TdApi.MessagePhoto) withContext(Dispatchers.IO) {
+            val photoFile = download(content.photo.sizes[0].photo)
+
+            @Suppress("BlockingMethodInNonBlockingContext")
+            val source = BufferedImageLuminanceSource(ImageIO.read(photoFile))
+
+            val qrText = runCatching {
+                decoder.decode(
+                    BinaryBitmap(GlobalHistogramBinarizer(source)), mapOf(
+                        DecodeHintType.POSSIBLE_FORMATS to listOf(BarcodeFormat.QR_CODE),
+                        DecodeHintType.TRY_HARDER to null
+                    )
+                ).text
+            }.recoverCatching {
+                decoder.decode(
+                    BinaryBitmap(GlobalHistogramBinarizer(source.invert())), mapOf(
+                        DecodeHintType.POSSIBLE_FORMATS to listOf(BarcodeFormat.QR_CODE),
+                        DecodeHintType.TRY_HARDER to null
+                    )
+                ).text
+            }.getOrNull()
+
+            if (!qrText.isNullOrBlank()) {
+                log.trace("qrcode detected")
+
+                exec()
+            }
+
         }
 
         val isSafe = content is TdApi.MessageSticker ||
