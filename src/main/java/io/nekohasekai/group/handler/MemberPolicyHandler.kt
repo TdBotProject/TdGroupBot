@@ -53,7 +53,7 @@ class MemberPolicyHandler : TdHandler() {
                 userId
             ).MP_DEL_WARN.input(getUser(userId).htmlInlineMention) onSuccess {
                 sudo delete message
-                delayDelete(it, timeMs = 3000L)
+                delayDelete(it, timeMs = 15000L)
             } replyTo message
         }
 
