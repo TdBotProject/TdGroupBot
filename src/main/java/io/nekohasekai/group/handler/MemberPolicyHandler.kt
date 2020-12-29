@@ -10,9 +10,10 @@ import io.nekohasekai.ktlib.td.core.raw.setChatMemberStatus
 import io.nekohasekai.ktlib.td.extensions.htmlInlineMention
 import io.nekohasekai.ktlib.td.extensions.isMember
 import io.nekohasekai.ktlib.td.i18n.localeFor
+import io.nekohasekai.ktlib.td.utils.delayDelete
 import io.nekohasekai.ktlib.td.utils.delete
-import io.nekohasekai.ktlib.td.utils.deleteDelay
 import io.nekohasekai.ktlib.td.utils.makeHtml
+import io.nekohasekai.ktlib.td.utils.muteMember
 import td.TdApi
 
 class MemberPolicyHandler : TdHandler() {
@@ -21,7 +22,7 @@ class MemberPolicyHandler : TdHandler() {
 
         if (message.content !is TdApi.MessageChatAddMembers &&
             message.content !is TdApi.MessageChatJoinByLink &&
-            message.messageThreadId == 0L
+            message.replyInChatId == 0L
         ) return
 
         val action = (global.groupConfigs.fetch(chatId).value?.takeIf { it.memberPolicy != 0 } ?: return).memberPolicy
@@ -46,11 +47,14 @@ class MemberPolicyHandler : TdHandler() {
                 }
             }
         } else if (!getChatMember(chatId, userId).isMember) {
+            muteMember(chatId, userId, (System.currentTimeMillis() / 1000).toInt() + 40)
             sudo makeHtml localeFor(
                 chatId,
                 userId
-            ).MP_DEL_WARN.input(getUser(userId).htmlInlineMention) onSuccess deleteDelay(timeMs = 6000L) syncReplyTo message
-            sudo delete message
+            ).MP_DEL_WARN.input(getUser(userId).htmlInlineMention) onSuccess {
+                sudo delete message
+                delayDelete(it, timeMs = 3000L)
+            } replyTo message
         }
 
     }
