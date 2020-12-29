@@ -197,8 +197,7 @@ open class TdGroupBot(tag: String = "main", name: String = "TdGroupBot") : TdCli
         message: TdApi.Message,
         function: String,
         param: String,
-        params: Array<String>,
-        originParams: Array<String>
+        params: Array<String>
     ) {
 
         val L = localeFor(userId)
@@ -213,13 +212,12 @@ open class TdGroupBot(tag: String = "main", name: String = "TdGroupBot") : TdCli
         message: TdApi.Message,
         function: String,
         param: String,
-        params: Array<String>,
-        originParams: Array<String>
+        params: Array<String>
     ) {
         if (!message.fromPrivate) {
             rejectFunction()
         }
-        super.onUndefinedFunction(userId, chatId, message, function, param, params, originParams)
+        super.onUndefinedFunction(userId, chatId, message, function, param, params)
     }
 
     override suspend fun skipFloodCheck(senderUserId: Int, message: TdApi.Message) = senderUserId == admin

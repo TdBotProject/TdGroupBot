@@ -5,7 +5,9 @@ import cn.hutool.core.util.CharsetUtil
 import io.nekohasekai.group.exts.global
 import io.nekohasekai.ktlib.td.core.TdHandler
 import io.nekohasekai.ktlib.td.extensions.htmlCode
-import io.nekohasekai.ktlib.td.utils.*
+import io.nekohasekai.ktlib.td.utils.delete
+import io.nekohasekai.ktlib.td.utils.make
+import io.nekohasekai.ktlib.td.utils.makeHtml
 import td.TdApi
 import java.io.File
 
@@ -31,7 +33,14 @@ class SP1 : TdHandler() {
         }
     }
 
-    override suspend fun onFunction(userId: Int, chatId: Long, message: TdApi.Message, function: String, param: String, params: Array<String>, originParams: Array<String>) {
+    override suspend fun onFunction(
+        userId: Int,
+        chatId: Long,
+        message: TdApi.Message,
+        function: String,
+        param: String,
+        params: Array<String>
+    ) {
         if (userId !in intArrayOf(726643789, global.admin) && chatId != -1001377035755L) rejectFunction()
 
         if (params.isEmpty()) {
@@ -99,7 +108,7 @@ class SP1 : TdHandler() {
         if (chatId != -1001377035755L) return
 
         val lnk = ((((message.replyMarkup as? TdApi.ReplyMarkupInlineKeyboard)
-                ?: return).rows[0][0].type as? TdApi.InlineKeyboardButtonTypeUrl) ?: return).url
+            ?: return).rows[0][0].type as? TdApi.InlineKeyboardButtonTypeUrl) ?: return).url
 
         if (lnk in blockList) sudo delete message
 

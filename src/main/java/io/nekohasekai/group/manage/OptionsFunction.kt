@@ -33,8 +33,7 @@ class OptionsFunction : TdHandler() {
         message: TdApi.Message,
         function: String,
         param: String,
-        params: Array<String>,
-        originParams: Array<String>
+        params: Array<String>
     ) {
 
         if (!NumberUtil.isLong(param) && !message.fromSuperGroup) {

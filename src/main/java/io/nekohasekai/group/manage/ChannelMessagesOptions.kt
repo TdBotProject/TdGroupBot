@@ -85,7 +85,7 @@ class ChannelMessagesOptions : GroupOptions.Handler() {
                     (config?.cmMode ?: 0 == 3).toStatusString(true),
                     GroupOptions.DATA_ID,
                     SUB_ID,
-                    byteArrayOf(1)
+                    byteArrayOf(3)
                 )
 
             }
@@ -94,14 +94,14 @@ class ChannelMessagesOptions : GroupOptions.Handler() {
             newLine {
 
                 dataButton(L.CM_MODE_DELETE, -1)
-                dataButton((config?.cmMode == 1).toStatusString(true), GroupOptions.DATA_ID, SUB_ID, byteArrayOf(2))
+                dataButton((config?.cmMode == 1).toStatusString(true), GroupOptions.DATA_ID, SUB_ID, byteArrayOf(1))
 
             }
 
             newLine {
 
                 dataButton(L.CM_MODE_REPOST_AND_DELETE, -1)
-                dataButton((config?.cmMode == 2).toStatusString(true), GroupOptions.DATA_ID, SUB_ID, byteArrayOf(3))
+                dataButton((config?.cmMode == 2).toStatusString(true), GroupOptions.DATA_ID, SUB_ID, byteArrayOf(2))
 
             }
 

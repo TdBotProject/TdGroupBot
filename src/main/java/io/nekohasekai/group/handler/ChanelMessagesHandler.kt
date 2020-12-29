@@ -29,7 +29,6 @@ class ChanelMessagesHandler : TdHandler() {
     override suspend fun onNewMessage(userId: Int, chatId: Long, message: TdApi.Message) {
 
         val config = global.groupConfigs.fetch(chatId).value ?: return
-        val content = message.content
         if (message.senderChatId == 0L || message.senderChatId == message.chatId) return
         val mediaAlbumId = message.mediaAlbumId
 

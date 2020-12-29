@@ -69,8 +69,7 @@ class GroupOptions : TdHandler() {
         message: TdApi.Message,
         function: String,
         param: String,
-        params: Array<String>,
-        originParams: Array<String>
+        params: Array<String>
     ) {
 
         if (!NumberUtil.isLong(param) && !message.fromSuperGroup) {
@@ -236,6 +235,7 @@ class GroupOptions : TdHandler() {
         chatId: Long,
         message: TdApi.Message,
         payload: String,
+        param: String,
         params: Array<String>
     ) {
 

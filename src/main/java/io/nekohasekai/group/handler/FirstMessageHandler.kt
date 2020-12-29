@@ -29,8 +29,7 @@ class FirstMessageHandler : TdHandler() {
         message: TdApi.Message,
         function: String,
         param: String,
-        params: Array<String>,
-        originParams: Array<String>
+        params: Array<String>
     ) {
 
         userFirstMessageMap.fetch(chatId.toSupergroupId to userId).set(null)
