@@ -108,6 +108,7 @@ class SimpleAntiSpamHandler : TdHandler(), FirstMessageHandler.Interface {
         }
 
         val isSafe = content is TdApi.MessageSticker ||
+                message.forwardInfo == null &&
                 content is TdApi.MessageText &&
                 content.text.entities.isEmpty() &&
                 content.text.text.count { CharUtil.isEmoji(it) } < 5
