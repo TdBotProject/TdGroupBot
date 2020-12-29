@@ -37,9 +37,7 @@ class ChanelMessagesHandler : TdHandler() {
             if (config.cmMode in intArrayOf(1, 2)) {
 
                 if (albumMessages[mediaAlbumId] == null) {
-
                     albumMessages[mediaAlbumId] = AlbumMessages()
-
                 }
 
                 albumMessages[mediaAlbumId]!!.apply {

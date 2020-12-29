@@ -11,3 +11,4 @@ BOT_LANG: zh_CN
 LOG_LEVEL: INFO
 DATA_DIR: data
 CACHE_DIR: cache
+ERROR_REPORT: disable
