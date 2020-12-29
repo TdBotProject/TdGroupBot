@@ -51,11 +51,10 @@ class SimpleAntiSpamHandler : TdHandler(), FirstMessageHandler.Interface {
                 2 -> banChatMember(chatId, userId)
                 3 -> kickMember(chatId, userId)
             }
+            sudo delete message
             if (isUserAgentAvailable(chatId)) with(userAgent!!) {
                 reportSupergroupSpam(chatId.toSupergroupId, userId, longArrayOf(message.id))
                 deleteChatMessagesFromUser(chatId, userId)
-            } else {
-                sudo delete message
             }
             finishEvent()
         }
@@ -115,10 +114,9 @@ class SimpleAntiSpamHandler : TdHandler(), FirstMessageHandler.Interface {
 
         if (!isSafe) {
             log.trace("Unsafe message")
+            sudo delete message
             if (isUserAgentAvailable(chatId)) with(userAgent!!) {
                 deleteChatMessagesFromUser(chatId, userId)
-            } else {
-                sudo delete message
             }
             return true
         }
