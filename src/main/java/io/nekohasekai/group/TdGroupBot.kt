@@ -112,6 +112,8 @@ open class TdGroupBot(tag: String = "main", name: String = "TdGroupBot") : TdCli
         addHandler(DeleteServiceMessagesHandler())
         addHandler(MemberPolicyHandler())
 
+        addHandler(NSFWHandler())
+
         // 给别人定制的东西
 
         addHandler(SP1())
@@ -175,14 +177,6 @@ open class TdGroupBot(tag: String = "main", name: String = "TdGroupBot") : TdCli
 
         val L = localeFor(userId)
 
-        if (LocaleStore.localeRead(chatId) == null) {
-
-            findHandler<LocaleSwitcher>().startSelect(L, chatId, true)
-
-            return
-
-        }
-
         sudo makeHtml L.LICENSE.input(repoName, licenseUrl, "Github Repo".htmlLink(repoUrl)) syncTo chatId
 
         delay(600L)
@@ -204,20 +198,6 @@ open class TdGroupBot(tag: String = "main", name: String = "TdGroupBot") : TdCli
 
         sudo makeMd L.HELP_MSG sendTo chatId
 
-    }
-
-    override suspend fun onUndefinedFunction(
-        userId: Int,
-        chatId: Long,
-        message: TdApi.Message,
-        function: String,
-        param: String,
-        params: Array<String>
-    ) {
-        if (!message.fromPrivate) {
-            rejectFunction()
-        }
-        super.onUndefinedFunction(userId, chatId, message, function, param, params)
     }
 
     override suspend fun skipFloodCheck(senderUserId: Int, message: TdApi.Message) = senderUserId == admin
