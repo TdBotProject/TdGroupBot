@@ -9,6 +9,7 @@ import io.nekohasekai.ktlib.td.extensions.senderChatId
 import io.nekohasekai.ktlib.td.utils.delete
 import io.nekohasekai.ktlib.td.utils.makeForward
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import td.TdApi
 import java.util.*
@@ -78,6 +79,7 @@ class ChanelMessagesHandler : TdHandler() {
 
             } else if (config.cmMode == 3 && message.isPinned) {
 
+                delay(1000L)
                 unpinChatMessage(chatId, message.id)
 
             }
@@ -93,7 +95,10 @@ class ChanelMessagesHandler : TdHandler() {
                 sudo makeForward message syncTo chatId
                 sudo delete message
             }
-            3 -> unpinChatMessage(chatId, message.id)
+            3 -> {
+                delay(1000L)
+                unpinChatMessage(chatId, message.id)
+            }
 
         }
 
