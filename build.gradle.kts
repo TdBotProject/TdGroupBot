@@ -50,14 +50,15 @@ dependencies {
     implementation("io.nekohasekai.ktlib:ktlib-td-cli:$vKtLib")
     implementation("io.nekohasekai.ktlib:ktlib-db:$vKtLib")
     implementation("io.nekohasekai.ktlib:ktlib-nsfw:$vKtLib")
-    implementation("io.nekohasekai.ktlib:ktlib-ocr:$vKtLib")
     implementation("io.nekohasekai.ktlib:ktlib-opencc:$vKtLib")
+    implementation("io.nekohasekai.ktlib:ktlib-ocr:$vKtLib")
 
     implementation("org.sejda.imageio:webp-imageio:0.1.6")
     implementation("com.google.zxing:javase:3.4.1")
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.google.code.gson:gson:2.8.6")
     implementation("com.hankcs:hanlp:portable-1.7.8")
-    implementation("org.slf4j:slf4j-simple:2.0.0-alpha1")
+
+    implementation("org.slf4j:slf4j-nop:2.0.0-alpha1")
 
 }

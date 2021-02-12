@@ -1,15 +1,12 @@
 package io.nekohasekai.group.exts
 
 import cn.hutool.core.util.CharUtil
-import io.nekohasekai.ktlib.td.extensions.displayName
-import io.nekohasekai.ktlib.td.extensions.htmlInlineMention
-import td.TdApi
 
-val TdApi.User.htmlInlineMentionSafe get() = displayName.removeNonASCII().htmlInlineMention(id)
 
 fun String.removeNonASCII(maxLength: Int = 10): String {
 
-    var result = String(map { if (CharUtil.isAsciiPrintable(it)) it else '*' }.toCharArray())
+    var result = map { if (CharUtil.isAsciiPrintable(it)) it else '■' }
+        .toCharArray().let(::String)
 
     if (result.length > maxLength) result = result.substring(0, maxLength) + "..."
 

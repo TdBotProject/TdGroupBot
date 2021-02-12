@@ -6,8 +6,8 @@ import io.nekohasekai.group.REPORT
 import io.nekohasekai.group.SW_INLIST
 import io.nekohasekai.group.database.GroupConfig
 import io.nekohasekai.group.exts.global
-import io.nekohasekai.group.exts.htmlInlineMentionSafe
 import io.nekohasekai.group.exts.isUserAgentAvailable
+import io.nekohasekai.group.exts.removeNonASCII
 import io.nekohasekai.group.exts.userAgent
 import io.nekohasekai.ktlib.core.input
 import io.nekohasekai.ktlib.td.core.TdHandler
@@ -15,6 +15,8 @@ import io.nekohasekai.ktlib.td.core.raw.deleteChatMessagesFromUser
 import io.nekohasekai.ktlib.td.core.raw.getUser
 import io.nekohasekai.ktlib.td.extensions.Hours
 import io.nekohasekai.ktlib.td.extensions.Minutes
+import io.nekohasekai.ktlib.td.extensions.displayName
+import io.nekohasekai.ktlib.td.extensions.htmlInlineMention
 import io.nekohasekai.ktlib.td.i18n.localeFor
 import io.nekohasekai.ktlib.td.utils.*
 import io.nekohasekai.spamwatch.SpamWatch
@@ -86,7 +88,10 @@ class SpamWatchHandler : TdHandler(), FirstMessageHandler.Interface {
         val L = localeFor(chatId)
 
         sudo makeHtml L.SW_INLIST.input(
-            getUser(userId).htmlInlineMentionSafe,
+            getUser(userId)
+                .displayName
+                .removeNonASCII()
+                .htmlInlineMention(userId),
             record.record!!.reason,
             L.MODES.split("|")[config.spamWatch]
         ) withMarkup inlineButton {

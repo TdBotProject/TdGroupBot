@@ -5,14 +5,10 @@ import cn.hutool.core.io.resource.ResourceUtil
 import cn.hutool.core.util.CharUtil
 import com.hankcs.hanlp.utility.TextUtility
 import io.nekohasekai.group.database.GroupConfig
-import io.nekohasekai.group.exts.isUserAgentAvailable
-import io.nekohasekai.group.exts.postLog
-import io.nekohasekai.group.exts.readQR
-import io.nekohasekai.group.exts.userAgent
+import io.nekohasekai.group.exts.*
 import io.nekohasekai.ktlib.cc.CCConverter
 import io.nekohasekai.ktlib.cc.CCTarget
 import io.nekohasekai.ktlib.core.mkLog
-import io.nekohasekai.ktlib.ocr.TessUtil
 import io.nekohasekai.ktlib.td.core.TdHandler
 import io.nekohasekai.ktlib.td.core.raw.deleteChatMessagesFromUser
 import io.nekohasekai.ktlib.td.core.raw.getUser
@@ -73,8 +69,8 @@ class SimpleAntiSpamHandler : TdHandler(), FirstMessageHandler.Interface {
         val userInfo = getUserFullInfo(userId)
 
         val displayName = user.displayName
-            .filter { CharUtil.isLetter(it) || TextUtility.isChinese(it) }
             .let { cc.convert(it).toLowerCase() }
+            .filter { CharUtil.isLetter(it) || TextUtility.isChinese(it) }
 
         if (message.isServiceMessage) {
             val users = LinkedList<TdApi.User>()
@@ -95,8 +91,9 @@ class SimpleAntiSpamHandler : TdHandler(), FirstMessageHandler.Interface {
             if (!ex) pr@ for (u in users) {
                 if (u.isBot) ex = true else {
                     val name = u.displayName
-                        .filter { CharUtil.isLetter(it) || TextUtility.isChinese(it) }
                         .let { cc.convert(it).toLowerCase() }
+                        .filter { CharUtil.isLetter(it) || TextUtility.isChinese(it) }
+
                     for (adContact in adContacts) {
                         if (name.contains(adContact)) {
                             ex = true
@@ -116,11 +113,11 @@ class SimpleAntiSpamHandler : TdHandler(), FirstMessageHandler.Interface {
                 }
             }
             if (ex) {
-                for (user in users) {
+                for (u in users) {
                     when (action) {
-                        1 -> muteMember(chatId, user.id)
-                        2 -> banChatMember(chatId, user.id)
-                        3 -> kickMember(chatId, user.id)
+                        1 -> muteMember(chatId, u.id)
+                        2 -> banChatMember(chatId, u.id)
+                        3 -> kickMember(chatId, u.id)
                     }
                 }
             }
@@ -143,7 +140,7 @@ class SimpleAntiSpamHandler : TdHandler(), FirstMessageHandler.Interface {
             exec()
         } else if (message.forwardInfo != null &&
             (message.textOrCaption == null ||
-                    message.textOrCaption!!.count { CharUtil.isEmoji(it) } > 2)
+                    message.textOrCaption!!.count { CharUtil.isEmoji(it) } > 4)
         ) {
             postLog(message, "Type", "Bad Forward")
             log.debug("forward detected")
@@ -161,18 +158,18 @@ class SimpleAntiSpamHandler : TdHandler(), FirstMessageHandler.Interface {
 
             for (adName in adNames) {
                 if (displayName.contains(adName)) {
-                    postLog(message, "Type", "Ad Name")
+                    postLog(message, "Type", "Ad Name", "Match", adName)
                     exec()
                 }
             }
 
             val bio = userInfo.bio
-                .filter { CharUtil.isLetter(it) || TextUtility.isChinese(it) }
                 .let { cc.convert(it).toLowerCase() }
+                .filter { CharUtil.isLetter(it) || TextUtility.isChinese(it) }
 
             for (adName in adNames) {
                 if (bio.contains(adName)) {
-                    postLog(message, "Type", "Ad Desc")
+                    postLog(message, "Type", "Ad Desc", "Match", adName)
                     exec()
                 }
             }
@@ -181,7 +178,7 @@ class SimpleAntiSpamHandler : TdHandler(), FirstMessageHandler.Interface {
 
         val text = message.textOrCaptionObj
         if (text != null) {
-            if (text.text.count { CharUtil.isEmoji(it) } > 3) {
+            if (text.text.count { CharUtil.isEmoji(it) } > 4) {
                 postLog(message, "Type", "Emoji")
                 exec()
             }
@@ -196,8 +193,8 @@ class SimpleAntiSpamHandler : TdHandler(), FirstMessageHandler.Interface {
             }
 
             val txt = text.text
-                .filter { CharUtil.isLetter(it) || TextUtility.isChinese(it) }
                 .let { cc.convert(it).toLowerCase() }
+                .filter { CharUtil.isLetter(it) || TextUtility.isChinese(it) }
 
             for (adContact in adContacts) {
                 if (txt.contains(adContact)) {
@@ -210,7 +207,7 @@ class SimpleAntiSpamHandler : TdHandler(), FirstMessageHandler.Interface {
 
                 for (adContent in adContents) {
                     if (txt.contains(adContent)) {
-                        postLog(message, "Type", "Ad Content")
+                        postLog(message, "Type", "Ad Content", "Match", adContent)
                         exec()
                     }
                 }
@@ -239,11 +236,12 @@ class SimpleAntiSpamHandler : TdHandler(), FirstMessageHandler.Interface {
                 } to !qrText.isNullOrBlank()
             })
 
-            if (TessUtil.initTess()) deferreds.add(
+            if (checkTess()) deferreds.add(
                 GlobalScope.async(
                     Dispatchers.IO
                 ) {
-                    val result = TessUtil.doOcr(profilePhoto.await())
+                    val result = imageToString(profilePhoto.await())
+                        .let { cc.convert(it).toLowerCase() }
                         .filter { TextUtility.isChinese(it) || CharUtil.isLetter(it) }
 
                     for (adContact in adContacts) {
@@ -264,7 +262,17 @@ class SimpleAntiSpamHandler : TdHandler(), FirstMessageHandler.Interface {
 
                     if (config.adName) for (adName in adNames) {
                         if (result.contains(adName)) {
-                            return@async suspend { postLog(message, "Type", "Ad Name", "OCR", result) } to true
+                            return@async suspend {
+                                postLog(
+                                    message,
+                                    "Type",
+                                    "Ad Name",
+                                    "OCR",
+                                    result,
+                                    "Match",
+                                    adName
+                                )
+                            } to true
                         }
                     }
                     null to false
@@ -289,9 +297,10 @@ class SimpleAntiSpamHandler : TdHandler(), FirstMessageHandler.Interface {
                 suspend { postLog(message, "Type", "Qr Code", "QR Text", qrText!!) } to !qrText.isNullOrBlank()
             })
 
-            if (TessUtil.initTess()) {
-                if (config.adContent || adContacts.isNotEmpty()) deferreds.add(GlobalScope.async(Dispatchers.IO) {
-                    val result = TessUtil.doOcr(photoFile.await())
+            if (checkTess()) {
+                deferreds.add(GlobalScope.async(Dispatchers.IO) {
+                    val result = imageToString(photoFile.await())
+                        .let { cc.convert(it).toLowerCase() }
                         .filter { TextUtility.isChinese(it) || CharUtil.isLetter(it) }
 
                     for (adContact in adContacts) {
@@ -303,7 +312,7 @@ class SimpleAntiSpamHandler : TdHandler(), FirstMessageHandler.Interface {
                                     "Ad Contact",
                                     "OCR", result,
                                     "Contact",
-                                    adContact,
+                                    adContact
                                 )
                             } to true
                         }
@@ -311,7 +320,17 @@ class SimpleAntiSpamHandler : TdHandler(), FirstMessageHandler.Interface {
 
                     for (adName in adContents) {
                         if (result.contains(adName)) {
-                            return@async suspend { postLog(message, "Type", "Ad Content", "OCR", result) } to true
+                            return@async suspend {
+                                postLog(
+                                    message,
+                                    "Type",
+                                    "Ad Content",
+                                    "OCR",
+                                    result,
+                                    "Match",
+                                    adName
+                                )
+                            } to true
                         }
                     }
                     null to false
@@ -329,7 +348,7 @@ class SimpleAntiSpamHandler : TdHandler(), FirstMessageHandler.Interface {
                 message.forwardInfo == null &&
                 content is TdApi.MessageText &&
                 content.text.entities.isEmpty() &&
-                content.text.text.count { CharUtil.isEmoji(it) } < 3
+                content.text.text.count { CharUtil.isEmoji(it) } < 5
 
         if (!isSafe) {
             postLog(message, "Type", "Unsafe")

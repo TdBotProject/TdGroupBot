@@ -1,8 +1,8 @@
 package io.nekohasekai.group.handler
 
-import cn.hutool.core.util.CharUtil
 import io.nekohasekai.group.MP_DEL_WARN
 import io.nekohasekai.group.exts.global
+import io.nekohasekai.group.exts.removeNonASCII
 import io.nekohasekai.ktlib.core.input
 import io.nekohasekai.ktlib.td.core.TdHandler
 import io.nekohasekai.ktlib.td.core.raw.getChatMember
@@ -55,8 +55,7 @@ class MemberPolicyHandler : TdHandler() {
                 userId
             ).MP_DEL_WARN.input(
                 getUser(userId).displayName
-                    .map { if (CharUtil.isAsciiPrintable(it)) it else '■' }
-                    .toCharArray().let(::String)
+                    .removeNonASCII()
                     .htmlInlineMention(userId)) onSuccess {
                 sudo delete message
                 delayDelete(it, timeMs = 15000L)

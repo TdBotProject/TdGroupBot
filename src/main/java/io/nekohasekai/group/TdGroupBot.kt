@@ -120,7 +120,7 @@ open class TdGroupBot(tag: String = "main", name: String = "TdGroupBot") : TdCli
         addHandler(DeleteServiceMessagesHandler())
         addHandler(MemberPolicyHandler())
 
-        addHandler(NSFWHandler())
+        addHandler(ImageHandler())
 
         // 给别人定制的东西
 
