@@ -6,5 +6,9 @@ includeBuild("ktlib") {
         include("ktlib-td-cli")
         include("ktlib-db")
         include("ktlib-nsfw")
+        include("ktlib-ocr")
+        include("ktlib-opencc")
     }
 }
+
+include(":data_fetcher")

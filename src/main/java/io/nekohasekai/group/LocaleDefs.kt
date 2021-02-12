@@ -29,7 +29,9 @@ internal val L.MENU_USER_AGENT by string
 internal val L.UA_INFO by string
 internal val L.SW_INFO by string
 internal val L.SW_INLIST by string
+internal val L.MENU_NSFW by string
 internal val L.MODES by string
+internal val L.MODES_TEXT by string
 internal val L.REPORT by string
 internal val L.MENU_DELETE_SERVICE_MESSAGES by string
 internal val L.DSM_INFO by string
@@ -41,6 +43,11 @@ internal val L.MP_INFO by string
 internal val L.MP_KICK by string
 internal val L.MP_REQUIRE_JOIN by string
 internal val L.MP_DEL_WARN by string
+internal val L.AS_OTHER by string
+internal val L.AS_ADNAME by string
+internal val L.AS_ADCONTENT by string
+internal val L.NSFW_STICKER by string
+internal val L.NSFW_MEDIA by string
 internal val L.FN_MISSING_ACTION by string
 internal val L.FN_UNKNOWN_ACTION by string
 internal val L.FN_INVALID_PARAM by string

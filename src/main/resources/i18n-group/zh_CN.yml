@@ -37,7 +37,7 @@ CM_MODE_REPOST_AND_DELETE: |-
 MENU_ANTI_SPAM: |-
   反广告
 AS_INFO: |-
-  简易的反广告功能, 没有内置 机器学习 / OCR / NLP 和黑名单, 但是基本能用.
+  简易的反广告功能 :)
 MENU_AS_SIMPLE: |-
   简易反垃圾规则
 MENU_SPAM_WARCH: |-
@@ -49,7 +49,10 @@ SIMPLE_AS_INFO: |-
   - 忽略非第一条的发言
   + 不计算服务消息
 
-  **关于第一条消息检测**
+  **加群预判**
+  + 如果启用了资料关键词
+
+  **第一条消息检测**
   - 如果用户代理可用:
     + 将直接搜索该用户的历史消息
     + 举报违规消息并删除所有历史消息
@@ -57,12 +60,21 @@ SIMPLE_AS_INFO: |-
     + 接收到机器人加群后的第一条消息后标记为已发言
     - 仅处理接收到的消息
 
-  **消息内容处理**
+  **消息内容判定**
   + 可执行文件或压缩包
   + 名片
   + 转发, 且没有文本或包含多个 Emoji
+  + 邀请机器人
   - 贴纸
+  + 二维码
+  + 文本及媒体文字解析 (如果启用内容关键词)
   + 不为纯文本 (仅删除)
+
+  **关于字典**
+  + 名称字典 [ad_name.txt](https://github.com/TdBotProject/TdGroupBot/blob/dev/src/main/resources/ad_name.txt)
+  + 内容字典 [ad_content.txt.txt](https://github.com/TdBotProject/TdGroupBot/blob/dev/src/main/resources/ad_name.txt)
+  + 联系方式字典 [ad_contact.txt](https://github.com/TdBotProject/TdGroupBot/blob/dev/src/main/resources/ad_contact.txt)
+  - 名称与内容字典存在误伤可能, 您可自选启用或者参与贡献.
 
   **关于消息删除**
   + 删除后用户将被标记为未发言
@@ -90,7 +102,11 @@ SW_INLIST: |
 
   原因: {}
   执行: {}
+MENU_NSFW: |-
+  🔞 NSFW
+
 MODES: 不处理|禁言|封锁|移除
+MODES_TEXT: 不处理|删除|禁言|封锁|移除
 REPORT: |-
   反馈
 MENU_DELETE_SERVICE_MESSAGES: |-
@@ -114,6 +130,18 @@ MP_REQUIRE_JOIN: |-
   删除非成员发言
 MP_DEL_WARN: |-
   {}, 评论前请先加入本频道之讨论群组.
+
+AS_OTHER: |-
+  杂项
+AS_ADNAME: |-
+  资料关键词字典
+AS_ADCONTENT: |-
+  内容关键词字典
+
+NSFW_STICKER: |-
+  贴纸
+NSFW_MEDIA: |-
+  媒体
 
 FN_MISSING_ACTION: 缺少参数名.
 FN_UNKNOWN_ACTION: 未知参数.

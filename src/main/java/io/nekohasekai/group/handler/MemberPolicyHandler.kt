@@ -1,5 +1,6 @@
 package io.nekohasekai.group.handler
 
+import cn.hutool.core.util.CharUtil
 import io.nekohasekai.group.MP_DEL_WARN
 import io.nekohasekai.group.exts.global
 import io.nekohasekai.ktlib.core.input
@@ -7,6 +8,7 @@ import io.nekohasekai.ktlib.td.core.TdHandler
 import io.nekohasekai.ktlib.td.core.raw.getChatMember
 import io.nekohasekai.ktlib.td.core.raw.getUser
 import io.nekohasekai.ktlib.td.core.raw.setChatMemberStatus
+import io.nekohasekai.ktlib.td.extensions.displayName
 import io.nekohasekai.ktlib.td.extensions.htmlInlineMention
 import io.nekohasekai.ktlib.td.extensions.isMember
 import io.nekohasekai.ktlib.td.i18n.localeFor
@@ -51,7 +53,11 @@ class MemberPolicyHandler : TdHandler() {
             sudo makeHtml localeFor(
                 chatId,
                 userId
-            ).MP_DEL_WARN.input(getUser(userId).htmlInlineMention) onSuccess {
+            ).MP_DEL_WARN.input(
+                getUser(userId).displayName
+                    .map { if (CharUtil.isAsciiPrintable(it)) it else '■' }
+                    .toCharArray().let(::String)
+                    .htmlInlineMention(userId)) onSuccess {
                 sudo delete message
                 delayDelete(it, timeMs = 15000L)
             } replyTo message

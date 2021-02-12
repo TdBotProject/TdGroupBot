@@ -11,7 +11,6 @@ object OptionMessages : Table("option_messages") {
     val optionMessage = long("option_message")
 
     val userIndex = index(true, userId, chatId)
-
     override val primaryKey = PrimaryKey(userId, optionMessage)
 
     class MessagesMap(database: DatabaseDispatcher) : TwoIndexCacheMap<Int, Long, Long>(database, OptionMessages, userId, chatId, optionMessage)

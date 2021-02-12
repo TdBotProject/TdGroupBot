@@ -43,26 +43,45 @@ MENU_AS_SIMPLE: |-
 MENU_SPAM_WARCH: |-
   Spam Watch Intergation
 SIMPLE_AS_INFO: |-
-  Simple anti-spam processing
+  Simple anti spam processing
 
-  **Current rules**
-  - Ignore non-first
+  **Current rules are as follows**
+  - Ignore statements that are not the first
   + Do not count service messages
-  + After receiving the first message after the bot joins the group, it is marked as having spoken
 
-  **Message content processing**
-  + Executable or compressed file
-  + Contact
-  + Forward message, and no text or multiple emojis
-  - Srickers
-  + Non-plain text (delete only)
+  **Add group pre-determination**
+  + If profile keywords are enabled
+
+  **first message detection**
+  - If user agent is available:
+    + Will directly search the user's history messages
+    + Report the offending message and delete all historical messages
+  - Otherwise:
+    + Mark as spoken after receiving the first message after the bot joins the group
+    - Only incoming messages are processed
+
+  **Message content determination**
+  + Executable file or zip file
+  + Contact cards
+  + Retweets, and no text or multiple Emoji included
+  + Invite bots
+  - Stickers
+  + QR codes
+  + Text and media text parsing (if content keywords are enabled)
+  + not plain text (delete only)
+
+  **About dictionary**
+  + Name dictionary [ad_name.txt](https://github.com/TdBotProject/TdGroupBot/blob/dev/src/main/resources/ad_name.txt)
+  + Content dictionary [ad_content.txt.txt](https://github.com/TdBotProject/TdGroupBot/blob/dev/src/main/resources/ad_name.txt)
+  + contact dictionary [ad_contact.txt](https://github.com/TdBotProject/TdGroupBot/blob/dev/src/main/resources/ad_contact.txt)
+  - The name and content dictionaries may be misleading, so you can enable them or contribute to them if you choose.
 
   **About message deletion**
-  + After deletion, the user will be marked as unspoken
+  + Users will be marked as not speaking after deletion
 
-  In addition, you can subscribe to @TdBotProject to get notification of rule updates :)
+  Also, you can subscribe to @TdBotProject to be notified of rule updates :)
 
-  You can choose the action to be performed when the check is hit:
+  You can choose the action to perform when the check is hit:
 MENU_USER_AGENT: |-
   Configure user agent
 UA_INFO: |-
@@ -107,6 +126,13 @@ MP_REQUIRE_JOIN: |-
   Delete non-member comment
 MP_DEL_WARN: |-
   {}, please join the discussion group of this channel before commenting.
+
+AS_OTHER: |-
+  Other
+AS_ADNAME: |-
+  Profile Keyword Dictionary
+AS_ADCONTENT: |-
+  Content Keyword Dictionary
 
 FN_MISSING_ACTION: Missing action.
 FN_UNKNOWN_ACTION: Unknown action.

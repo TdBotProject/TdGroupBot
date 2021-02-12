@@ -5,7 +5,6 @@ import io.nekohasekai.group.database.GroupConfig
 import io.nekohasekai.group.exts.global
 import io.nekohasekai.ktlib.core.toStatusString
 import io.nekohasekai.ktlib.td.cli.database
-import io.nekohasekai.ktlib.td.core.TdHandler
 import io.nekohasekai.ktlib.td.i18n.BACK_ARROW
 import io.nekohasekai.ktlib.td.i18n.localeFor
 import io.nekohasekai.ktlib.td.utils.*
@@ -57,23 +56,36 @@ class AntiSpamOptions : GroupOptions.Handler() {
         if (subId == 3) {
 
             if (data.isEmpty()) {
-                sudo makeMd L.SIMPLE_AS_INFO withMarkup mkButtons(
+                sudo makeMd L.SIMPLE_AS_INFO withMarkup mkAsButtons(
                     userId,
-                    cache.simpleAs
+                    cache
                 ) at messageId editTo chatId
                 sudo confirmTo queryId
                 return
             }
 
-            val targetAction = data[0][0].toInt()
-            if (cache.simpleAs != targetAction) {
+            val action = data[0][0].toInt()
+            val target = data[1][0].toInt()
+            if (action == 0) {
+                if (cache.simpleAs != target) {
+                    database.write {
+                        cache.simpleAs = target
+                    }
+                    config.notifyChanged()
+                }
+            } else if (target == 0) {
                 database.write {
-                    cache.simpleAs = targetAction
+                    cache.adName = !cache.adName
+                }
+                config.notifyChanged()
+            } else if (target == 1) {
+                database.write {
+                    cache.adContent = !cache.adContent
                 }
                 config.notifyChanged()
             }
 
-            sudo makeInlineButton mkButtons(userId, cache.simpleAs) at messageId editTo chatId
+            sudo makeInlineButton mkAsButtons(userId, cache) at messageId editTo chatId
 
         } else if (subId == 4) {
 
@@ -97,6 +109,52 @@ class AntiSpamOptions : GroupOptions.Handler() {
 
     }
 
+    fun mkAsButtons(userId: Int, config: GroupConfig): TdApi.ReplyMarkupInlineKeyboard {
+        val L = localeFor(userId)
+
+        return inlineButton {
+
+            L.MODES.split("|").forEachIndexed { index, it ->
+                newLine {
+                    textButton(it)
+                    dataButton(
+                        (index == config.simpleAs).toStatusString(true),
+                        GroupOptions.DATA_ID,
+                        SIMPLE_AS,
+                        byteArrayOf(0),
+                        byteArrayOf(index.toByte())
+                    )
+                }
+            }
+
+            textLine(L.AS_OTHER)
+
+            newLine {
+                textButton(L.AS_ADNAME)
+                dataButton(
+                    config.adName.toStatusString(),
+                    GroupOptions.DATA_ID,
+                    SIMPLE_AS,
+                    byteArrayOf(1),
+                    byteArrayOf(0)
+                )
+            }
+
+            newLine {
+                textButton(L.AS_ADCONTENT)
+                dataButton(
+                    config.adContent.toStatusString(),
+                    GroupOptions.DATA_ID,
+                    SIMPLE_AS,
+                    byteArrayOf(1),
+                    byteArrayOf(1)
+                )
+            }
+
+            dataLine(L.BACK_ARROW, GroupOptions.DATA_ID, SUB_ID)
+        }
+    }
+
     fun mkButtons(userId: Int, curr: Int): TdApi.ReplyMarkupInlineKeyboard {
 
         val L = localeFor(userId)
@@ -114,6 +172,7 @@ class AntiSpamOptions : GroupOptions.Handler() {
                     )
                 }
             }
+
             dataLine(L.BACK_ARROW, GroupOptions.DATA_ID, SUB_ID)
 
         }

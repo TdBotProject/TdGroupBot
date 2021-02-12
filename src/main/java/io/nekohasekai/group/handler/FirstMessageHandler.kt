@@ -38,7 +38,7 @@ class FirstMessageHandler : TdHandler() {
 
     override suspend fun onNewMessage(userId: Int, chatId: Long, message: TdApi.Message) {
 
-        if (userId == 0 || isChatAdmin(chatId, userId) || message.isServiceMessage) return
+        if (userId == 0 || isChatAdmin(chatId, userId)) return
 
         val config = global.groupConfigs.fetch(chatId).value ?: return
         val userFirstMessage = userFirstMessageMap.fetch(chatId.toSupergroupId to userId)
@@ -49,7 +49,7 @@ class FirstMessageHandler : TdHandler() {
 
         if (sudo.handlers.filterIsInstance<Interface>().all {
                 !it.onFirstMessage(userId, chatId, message, config)
-            }) {
+            } && !message.isServiceMessage) {
             userFirstMessage.set(message.date)
         }
 

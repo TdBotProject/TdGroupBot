@@ -9,6 +9,9 @@ object GroupConfigs : IdTable<Long>("group_config") {
 
     val deleteServiceMessages = integer("delete_service_messages").default(0)
     val simpleAs = integer("simple_as").default(0)
+    val adName = bool("ad_name").default(false)
+    val adContent = bool("ad_content").default(false)
+
     val spamWatch = integer("spam_watch").default(0)
 
     val memberPolicy = integer("member_policy").default(0)

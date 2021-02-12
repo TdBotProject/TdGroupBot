@@ -1,5 +1,6 @@
 package io.nekohasekai.group
 
+import cn.hutool.core.util.NumberUtil
 import io.nekohasekai.group.database.GroupConfig
 import io.nekohasekai.group.database.GroupConfigs
 import io.nekohasekai.group.database.OptionMessages
@@ -51,6 +52,7 @@ open class TdGroupBot(tag: String = "main", name: String = "TdGroupBot") : TdCli
     }
 
     var admin = 0
+    var logChannel = 0L
     var reportUrl = "https://t.me/TdBotProject"
     var userAgentTag = ""
     var spamWatchKey = ""
@@ -59,6 +61,12 @@ open class TdGroupBot(tag: String = "main", name: String = "TdGroupBot") : TdCli
         super.onLoadConfig()
 
         admin = intConfig("B0T_OWNER") ?: admin
+
+        val logChannel = stringConfig("LOG_CHANNEL")
+        if (NumberUtil.isLong(logChannel)) {
+            this.logChannel = NumberUtil.parseLong(logChannel)
+        }
+
         reportUrl = stringConfig("REPORT_URL") ?: reportUrl
         userAgentTag = stringConfig("USER_AGENT") ?: userAgentTag
         spamWatchKey = stringConfig("SPAM_WATCH_API_KEY") ?: spamWatchKey
@@ -166,7 +174,7 @@ open class TdGroupBot(tag: String = "main", name: String = "TdGroupBot") : TdCli
     }
 
     override suspend fun onNewMessage(userId: Int, chatId: Long, message: TdApi.Message) {
-        defaultLog.trace(formatMessage(message))
+        defaultLog.debug(formatMessage(message))
 
         super.onNewMessage(userId, chatId, message)
     }

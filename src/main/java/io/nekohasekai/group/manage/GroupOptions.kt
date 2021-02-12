@@ -206,8 +206,9 @@ class GroupOptions : TdHandler() {
 
         if (lastMessage != null && lastMessage > 0L && !isEdit) {
 
+            chatCache.value = null
+            chatCache.flush()
             global.optionChats.fetch(userId to lastMessage).write(null)
-
             delete(chatId, lastMessage)
 
         }

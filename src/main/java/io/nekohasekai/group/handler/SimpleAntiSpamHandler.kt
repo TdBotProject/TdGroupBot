@@ -1,28 +1,31 @@
 package io.nekohasekai.group.handler
 
+import cn.hutool.cache.impl.LFUCache
+import cn.hutool.core.io.resource.ResourceUtil
 import cn.hutool.core.util.CharUtil
-import com.google.zxing.BarcodeFormat
-import com.google.zxing.BinaryBitmap
-import com.google.zxing.DecodeHintType
-import com.google.zxing.client.j2se.BufferedImageLuminanceSource
-import com.google.zxing.common.GlobalHistogramBinarizer
-import com.google.zxing.qrcode.QRCodeReader
+import com.hankcs.hanlp.utility.TextUtility
 import io.nekohasekai.group.database.GroupConfig
 import io.nekohasekai.group.exts.isUserAgentAvailable
+import io.nekohasekai.group.exts.postLog
+import io.nekohasekai.group.exts.readQR
 import io.nekohasekai.group.exts.userAgent
+import io.nekohasekai.ktlib.cc.CCConverter
+import io.nekohasekai.ktlib.cc.CCTarget
 import io.nekohasekai.ktlib.core.mkLog
+import io.nekohasekai.ktlib.ocr.TessUtil
 import io.nekohasekai.ktlib.td.core.TdHandler
 import io.nekohasekai.ktlib.td.core.raw.deleteChatMessagesFromUser
+import io.nekohasekai.ktlib.td.core.raw.getUser
+import io.nekohasekai.ktlib.td.core.raw.getUserFullInfo
 import io.nekohasekai.ktlib.td.core.raw.reportSupergroupSpam
-import io.nekohasekai.ktlib.td.extensions.displayName
-import io.nekohasekai.ktlib.td.extensions.textOrCaption
-import io.nekohasekai.ktlib.td.extensions.toSupergroupId
+import io.nekohasekai.ktlib.td.extensions.*
 import io.nekohasekai.ktlib.td.utils.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import td.TdApi
-import javax.imageio.ImageIO
+import java.util.*
+import kotlin.collections.ArrayList
 
+@Suppress("TYPE_INFERENCE_ONLY_INPUT_TYPES_WARNING")
 class SimpleAntiSpamHandler : TdHandler(), FirstMessageHandler.Interface {
 
     val log = mkLog("AntiSpam")
@@ -31,7 +34,12 @@ class SimpleAntiSpamHandler : TdHandler(), FirstMessageHandler.Interface {
 
     companion object {
 
-        val decoder = QRCodeReader()
+        val adNames = ResourceUtil.readUtf8Str("ad_name.txt").split("\n").toHashSet()
+        val adContents = ResourceUtil.readUtf8Str("ad_content.txt").split("\n").toHashSet()
+        val adContacts = ResourceUtil.readUtf8Str("ad_contact.txt").split("\n").toHashSet()
+
+        val spamDict = LFUCache<Int, Unit>(-1, 1 * Days)
+        val cc = CCConverter(CCTarget.SP)
 
     }
 
@@ -46,6 +54,8 @@ class SimpleAntiSpamHandler : TdHandler(), FirstMessageHandler.Interface {
         val content = message.content
 
         suspend fun exec(): Nothing {
+            spamDict.put(userId, Unit)
+
             when (action) {
                 1 -> muteMember(chatId, userId)
                 2 -> banChatMember(chatId, userId)
@@ -59,71 +69,279 @@ class SimpleAntiSpamHandler : TdHandler(), FirstMessageHandler.Interface {
             finishEvent()
         }
 
+        val user = getUser(userId)
+        val userInfo = getUserFullInfo(userId)
+
+        val displayName = user.displayName
+            .filter { CharUtil.isLetter(it) || TextUtility.isChinese(it) }
+            .let { cc.convert(it).toLowerCase() }
+
+        if (message.isServiceMessage) {
+            val users = LinkedList<TdApi.User>()
+
+            when (content) {
+                is TdApi.MessageChatAddMembers -> for (memberUserId in content.memberUserIds) {
+                    if (memberUserId == userId) {
+                        users.add(user)
+                    } else {
+                        users.add(getUser(memberUserId))
+                    }
+                }
+                is TdApi.MessageChatJoinByLink -> users.add(user)
+                else -> return false
+            }
+
+            var ex = spamDict.containsKey(userId)
+            if (!ex) pr@ for (u in users) {
+                if (u.isBot) ex = true else {
+                    val name = u.displayName
+                        .filter { CharUtil.isLetter(it) || TextUtility.isChinese(it) }
+                        .let { cc.convert(it).toLowerCase() }
+                    for (adContact in adContacts) {
+                        if (name.contains(adContact)) {
+                            ex = true
+
+                            postLog(chatId, userId, "Type", "Ad Contact", "Contact", adContact)
+                            break@pr
+                        }
+                    }
+                    if (!config.adName) for (adName in adNames) {
+                        if (name.contains(adName)) {
+                            ex = true
+
+                            postLog(chatId, userId, "Type", "Ad Name")
+                            break@pr
+                        }
+                    }
+                }
+            }
+            if (ex) {
+                for (user in users) {
+                    when (action) {
+                        1 -> muteMember(chatId, user.id)
+                        2 -> banChatMember(chatId, user.id)
+                        3 -> kickMember(chatId, user.id)
+                    }
+                }
+            }
+            if (ex) exec()
+
+            return true
+        }
+
         if (content is TdApi.MessageDocument) {
             if (content.document.fileName.matches(virusAbs)) {
-                log.trace("virus like file detected")
+                log.debug("virus like file detected")
+                postLog(message, "Type", "Bad File")
                 exec()
             } else {
-                log.trace("else file: ${content.document.fileName}")
+                log.debug("else file: ${content.document.fileName}")
             }
         } else if (content is TdApi.MessageContact) {
-            log.trace("content detected: ${content.contact.displayName}")
+            postLog(message, "Type", "Contact")
+            log.debug("content detected: ${content.contact.displayName}")
             exec()
         } else if (message.forwardInfo != null &&
             (message.textOrCaption == null ||
                     message.textOrCaption!!.count { CharUtil.isEmoji(it) } > 2)
         ) {
-            log.trace("forward detected")
+            postLog(message, "Type", "Bad Forward")
+            log.debug("forward detected")
             exec()
         }
 
-        if (content is TdApi.MessagePhoto) withContext(Dispatchers.IO) {
-            val photoFile = download(content.photo.sizes[0].photo)
+        for (adContact in adContacts) {
+            if (displayName.contains(adContact)) {
+                postLog(message, "Type", "Ad Contact", "Contact", adContact)
+                exec()
+            }
+        }
 
-            @Suppress("BlockingMethodInNonBlockingContext")
-            val source = BufferedImageLuminanceSource(ImageIO.read(photoFile))
+        if (config.adName) {
 
-            val qrText = runCatching {
-                decoder.decode(
-                    BinaryBitmap(GlobalHistogramBinarizer(source)), mapOf(
-                        DecodeHintType.POSSIBLE_FORMATS to listOf(BarcodeFormat.QR_CODE),
-                        DecodeHintType.TRY_HARDER to null
-                    )
-                ).text
-            }.recoverCatching {
-                decoder.decode(
-                    BinaryBitmap(GlobalHistogramBinarizer(source.invert())), mapOf(
-                        DecodeHintType.POSSIBLE_FORMATS to listOf(BarcodeFormat.QR_CODE),
-                        DecodeHintType.TRY_HARDER to null
-                    )
-                ).text
-            }.getOrNull()
+            for (adName in adNames) {
+                if (displayName.contains(adName)) {
+                    postLog(message, "Type", "Ad Name")
+                    exec()
+                }
+            }
 
-            if (!qrText.isNullOrBlank()) {
-                log.trace("qrcode detected")
+            val bio = userInfo.bio
+                .filter { CharUtil.isLetter(it) || TextUtility.isChinese(it) }
+                .let { cc.convert(it).toLowerCase() }
 
+            for (adName in adNames) {
+                if (bio.contains(adName)) {
+                    postLog(message, "Type", "Ad Desc")
+                    exec()
+                }
+            }
+
+        }
+
+        val text = message.textOrCaptionObj
+        if (text != null) {
+            if (text.text.count { CharUtil.isEmoji(it) } > 3) {
+                postLog(message, "Type", "Emoji")
                 exec()
             }
 
+            for (entity in text.entities) {
+                if (entity.type is TdApi.TextEntityTypeMention || entity.type is TdApi.TextEntityTypeTextUrl) {
+                    val link = text.text.substring(entity.offset, entity.length)
+
+                    postLog(message, "Type", "Link", "Link", link)
+                    exec()
+                }
+            }
+
+            val txt = text.text
+                .filter { CharUtil.isLetter(it) || TextUtility.isChinese(it) }
+                .let { cc.convert(it).toLowerCase() }
+
+            for (adContact in adContacts) {
+                if (txt.contains(adContact)) {
+                    postLog(message, "Type", "Ad Contact", "Contact", adContact)
+                    exec()
+                }
+            }
+
+            if (config.adContent) {
+
+                for (adContent in adContents) {
+                    if (txt.contains(adContent)) {
+                        postLog(message, "Type", "Ad Content")
+                        exec()
+                    }
+                }
+
+            }
+        }
+
+        val deferreds = ArrayList<Deferred<Pair<(suspend () -> Unit)?, Boolean>>>()
+
+        if (user.profilePhoto != null) {
+
+            val profilePhoto = GlobalScope.async(Dispatchers.IO) {
+                download(user.profilePhoto!!.big)
+            }
+
+            deferreds.add(GlobalScope.async(Dispatchers.IO) {
+                val qrText = readQR(profilePhoto.await())
+                suspend {
+                    postLog(
+                        message,
+                        "Type",
+                        "Qr Code (User Photo)",
+                        "QR Text",
+                        qrText!!
+                    )
+                } to !qrText.isNullOrBlank()
+            })
+
+            if (TessUtil.initTess()) deferreds.add(
+                GlobalScope.async(
+                    Dispatchers.IO
+                ) {
+                    val result = TessUtil.doOcr(profilePhoto.await())
+                        .filter { TextUtility.isChinese(it) || CharUtil.isLetter(it) }
+
+                    for (adContact in adContacts) {
+                        if (result.contains(adContact)) {
+                            return@async suspend {
+                                postLog(
+                                    message,
+                                    "Type",
+                                    "Ad Contact",
+                                    "OCR",
+                                    result,
+                                    "Contact",
+                                    adContact
+                                )
+                            } to true
+                        }
+                    }
+
+                    if (config.adName) for (adName in adNames) {
+                        if (result.contains(adName)) {
+                            return@async suspend { postLog(message, "Type", "Ad Name", "OCR", result) } to true
+                        }
+                    }
+                    null to false
+                })
+
+        }
+
+        val photoDocument = if (content is TdApi.MessagePhoto) {
+            content.photo.sizes[0].photo
+        } else if (content is TdApi.MessageVideo && content.video.thumbnail != null) {
+            content.video.thumbnail!!.file
+        } else if (content is TdApi.MessageVideoNote && content.videoNote.thumbnail != null) {
+            content.videoNote.thumbnail!!.file
+        } else null
+
+        if (photoDocument != null) {
+
+            val photoFile = GlobalScope.async { download(photoDocument) }
+
+            deferreds.add(GlobalScope.async(Dispatchers.IO) {
+                val qrText = readQR(photoFile.await())
+                suspend { postLog(message, "Type", "Qr Code", "QR Text", qrText!!) } to !qrText.isNullOrBlank()
+            })
+
+            if (TessUtil.initTess()) {
+                if (config.adContent || adContacts.isNotEmpty()) deferreds.add(GlobalScope.async(Dispatchers.IO) {
+                    val result = TessUtil.doOcr(photoFile.await())
+                        .filter { TextUtility.isChinese(it) || CharUtil.isLetter(it) }
+
+                    for (adContact in adContacts) {
+                        if (result.contains(adContact)) {
+                            return@async suspend {
+                                postLog(
+                                    message,
+                                    "Type",
+                                    "Ad Contact",
+                                    "OCR", result,
+                                    "Contact",
+                                    adContact,
+                                )
+                            } to true
+                        }
+                    }
+
+                    for (adName in adContents) {
+                        if (result.contains(adName)) {
+                            return@async suspend { postLog(message, "Type", "Ad Content", "OCR", result) } to true
+                        }
+                    }
+                    null to false
+                })
+            }
+        }
+
+        for ((print, result) in deferreds.awaitAll()) {
+            if (!result) continue
+            print?.invoke()
+            exec()
         }
 
         val isSafe = content is TdApi.MessageSticker ||
                 message.forwardInfo == null &&
                 content is TdApi.MessageText &&
                 content.text.entities.isEmpty() &&
-                content.text.text.count { CharUtil.isEmoji(it) } < 5
+                content.text.text.count { CharUtil.isEmoji(it) } < 3
 
         if (!isSafe) {
-            log.trace("Unsafe message")
+            postLog(message, "Type", "Unsafe")
             sudo delete message
-            if (isUserAgentAvailable(chatId)) with(userAgent!!) {
-                deleteChatMessagesFromUser(chatId, userId)
-            }
+            return true
+        } else if (spamDict.containsKey(userId)) {
+            postLog(message, "Type", "Cache")
+            sudo delete message
             return true
         }
 
         return false
-
     }
 
 }
