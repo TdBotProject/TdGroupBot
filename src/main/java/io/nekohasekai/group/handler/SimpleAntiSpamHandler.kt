@@ -281,7 +281,7 @@ class SimpleAntiSpamHandler : TdHandler(), FirstMessageHandler.Interface {
         }
 
         val photoDocument = if (content is TdApi.MessagePhoto) {
-            content.photo.sizes[0].photo
+            content.photo.sizes.map { it.photo }.maxByOrNull { it.expectedSize }!!
         } else if (content is TdApi.MessageVideo && content.video.thumbnail != null) {
             content.video.thumbnail!!.file
         } else if (content is TdApi.MessageVideoNote && content.videoNote.thumbnail != null) {

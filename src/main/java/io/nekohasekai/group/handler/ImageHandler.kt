@@ -1,7 +1,5 @@
 package io.nekohasekai.group.handler
 
-import cn.hutool.core.util.CharUtil
-import com.hankcs.hanlp.utility.TextUtility
 import io.nekohasekai.group.exts.checkTess
 import io.nekohasekai.group.exts.global
 import io.nekohasekai.group.exts.imageToString
@@ -29,7 +27,7 @@ class ImageHandler : TdHandler() {
         if (!message.fromPrivate) return
 
         val photo = when (val content = message.content) {
-            is TdApi.MessagePhoto -> content.photo.sizes[0].photo
+            is TdApi.MessagePhoto -> content.photo.sizes.map { it.photo }.maxByOrNull { it.expectedSize }!!
             is TdApi.MessageVideo -> content.video.thumbnail?.file
             is TdApi.MessageAnimation -> content.animation.thumbnail?.file
             is TdApi.MessageSticker -> content.sticker.sticker
@@ -50,9 +48,14 @@ class ImageHandler : TdHandler() {
                 if (checkTess()) {
                     var result = imageToString(photoFile)
                     if (result.isNotBlank()) {
-                        result = result.filter { CharUtil.isLetter(it) || TextUtility.isChinese(it) }
-                            .toCharArray().let(::String)
-                        sudo makeHtml "OCR: " + result.htmlCode replyTo message
+                        result = result.replace("   ", " ")
+                        while (result.contains("  ")) result = result.replace("  ", "")
+                        while (result.contains(" \n")) result = result.replace(" \n", "\n")
+                        while (result.contains("\n\n")) result = result.replace("\n\n", "\n")
+
+                        sudo makeHtml "OCR: " + result
+                            .let { SimpleAntiSpamHandler.cc.convert(it) }
+                            .htmlCode replyTo message
                     }
                 }
             }.onFailure {
@@ -64,6 +67,8 @@ class ImageHandler : TdHandler() {
             runCatching {
                 val qrText = readQR(photoFile)
                 if (!qrText.isNullOrBlank()) sudo makeHtml "Link: " + qrText.htmlCode replyTo message
+            }.onFailure {
+                it.printStackTrace()
             }
         }
 
