@@ -185,7 +185,7 @@ class SimpleAntiSpamHandler : TdHandler(), FirstMessageHandler.Interface {
 
             for (entity in text.entities) {
                 if (entity.type is TdApi.TextEntityTypeMention || entity.type is TdApi.TextEntityTypeTextUrl) {
-                    val link = text.text.substring(entity.offset, entity.length)
+                    val link = text.text.substring(entity.offset, entity.offset + entity.length)
 
                     postLog(message, "Type", "Link", "Link", link)
                     exec()

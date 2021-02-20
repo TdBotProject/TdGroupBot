@@ -7,7 +7,6 @@ includeBuild("ktlib") {
         include("ktlib-db")
         include("ktlib-nsfw")
         include("ktlib-opencc")
-        include("ktlib-ocr")
     }
 }
 

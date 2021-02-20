@@ -51,7 +51,6 @@ dependencies {
     implementation("io.nekohasekai.ktlib:ktlib-db:$vKtLib")
     implementation("io.nekohasekai.ktlib:ktlib-nsfw:$vKtLib")
     implementation("io.nekohasekai.ktlib:ktlib-opencc:$vKtLib")
-    implementation("io.nekohasekai.ktlib:ktlib-ocr:$vKtLib")
 
     implementation("org.sejda.imageio:webp-imageio:0.1.6")
     implementation("com.google.zxing:javase:3.4.1")

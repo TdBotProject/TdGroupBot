@@ -1,6 +1,7 @@
 package io.nekohasekai.group.exts
 
 import cn.hutool.core.util.RuntimeUtil
+import io.nekohasekai.ktlib.core.defaultLog
 import java.io.File
 
 private lateinit var tessInited: Any
@@ -20,12 +21,14 @@ fun checkTess(): Boolean {
     return false
 }
 
-fun imageToString(imageFile: File, language: String = "chi_sim+chi-tra"): String {
-    return RuntimeUtil.getResult(
+fun imageToString(imageFile: File, language: String = "chi_sim+chi_tra"): String {
+    val result = RuntimeUtil.getResult(
         Runtime.getRuntime().exec(
             arrayOf(
                 "tesseract", "-l", language, imageFile.canonicalPath, "-"
             )
         )
     )
+    defaultLog.debug("[tesseract] " + imageFile.path + " => " + result.trim())
+    return result
 }
