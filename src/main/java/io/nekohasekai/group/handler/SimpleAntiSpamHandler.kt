@@ -9,6 +9,7 @@ import io.nekohasekai.group.exts.*
 import io.nekohasekai.ktlib.cc.CCConverter
 import io.nekohasekai.ktlib.cc.CCTarget
 import io.nekohasekai.ktlib.core.mkLog
+import io.nekohasekai.ktlib.nsfw.NSFW
 import io.nekohasekai.ktlib.td.core.TdHandler
 import io.nekohasekai.ktlib.td.core.raw.deleteChatMessagesFromUser
 import io.nekohasekai.ktlib.td.core.raw.getUser
@@ -297,6 +298,11 @@ class SimpleAntiSpamHandler : TdHandler(), FirstMessageHandler.Interface {
                 suspend { postLog(message, "Type", "Qr Code", "QR Text", qrText!!) } to !qrText.isNullOrBlank()
             })
 
+            deferreds.add(GlobalScope.async(Dispatchers.IO) {
+                val nsfw = NSFW.predict(photoFile.await())[0]
+                suspend { postLog(message, "Type", "PORN", "Value", "${nsfw[NSFW.PORN]}") } to (nsfw[NSFW.PORN]!! > 0.6)
+            })
+
             if (checkTess()) {
                 deferreds.add(GlobalScope.async(Dispatchers.IO) {
                     val result = imageToString(photoFile.await())
@@ -345,6 +351,8 @@ class SimpleAntiSpamHandler : TdHandler(), FirstMessageHandler.Interface {
         }
 
         val isSafe = content is TdApi.MessageSticker ||
+                content is TdApi.MessageAudio ||
+                content is TdApi.MessageAnimation ||
                 message.forwardInfo == null &&
                 content is TdApi.MessageText &&
                 content.text.entities.isEmpty() &&

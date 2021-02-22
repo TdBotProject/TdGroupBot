@@ -10,7 +10,7 @@ import io.nekohasekai.ktlib.td.utils.makeForward
 import io.nekohasekai.ktlib.td.utils.makeHtml
 import td.TdApi
 
-private suspend fun TdHandler.fmtMsg(chatId: Long, userId: Int, actions: Array<out String>): String {
+private suspend fun TdHandler.fmtMsg(chatId: Long, messageId: Long, userId: Int, actions: Array<out String>): String {
     var log = ""
     if (chatId != 0L) {
         val chat = getChatOrNull(chatId)
@@ -27,6 +27,11 @@ private suspend fun TdHandler.fmtMsg(chatId: Long, userId: Int, actions: Array<o
                 log += chat.title.htmlLink("https://t.me/$username")
                 log += "\n"
             }
+        }
+        if (messageId != 0L) {
+            log += "MessageId: ".htmlBold
+            log += messageId.htmlCode
+            log += "\n"
         }
     }
     if (userId != 0) {
@@ -60,7 +65,7 @@ suspend fun TdHandler.postLog(
     message: TdApi.Message,
     vararg actions: String
 ) {
-    val log = fmtMsg(message.chatId, message.senderUserId, actions)
+    val log = fmtMsg(message.chatId, message.id, message.senderUserId, actions)
     clientLog.info(parseTextEntities(log, TdApi.TextParseModeHTML()).text)
 
     var forwardedMessageId = 0L
@@ -78,7 +83,7 @@ suspend fun TdHandler.postLog(
     userId: Int = 0,
     vararg actions: String
 ) {
-    val log = fmtMsg(chatId, userId, actions)
+    val log = fmtMsg(chatId, 0L, userId, actions)
     clientLog.info(parseTextEntities(log, TdApi.TextParseModeHTML()).text)
 
     sudo makeHtml log sendTo global.logChannel

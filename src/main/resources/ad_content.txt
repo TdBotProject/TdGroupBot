@@ -257,3 +257,5 @@ BGP
 恩山
 时时彩选
 积分墙
+bitcoin
+goo.su
