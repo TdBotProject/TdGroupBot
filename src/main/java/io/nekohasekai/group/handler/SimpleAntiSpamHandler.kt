@@ -35,7 +35,7 @@ class SimpleAntiSpamHandler : TdHandler(), FirstMessageHandler.Interface {
         val adContents = ResourceUtil.readUtf8Str("ad_content.txt").split("\n").toHashSet()
         val adContacts = ResourceUtil.readUtf8Str("ad_contact.txt").split("\n").toHashSet()
 
-        val spamDict = LFUCache<Int, Unit>(-1, 1 * Days)
+        val spamDict = LFUCache<Int, Unit>(-1, 1 * Minutes)
         val cc = CCConverter(CCTarget.SP)
 
     }
@@ -88,7 +88,7 @@ class SimpleAntiSpamHandler : TdHandler(), FirstMessageHandler.Interface {
                 else -> return false
             }
 
-            var ex = spamDict.containsKey(userId)
+            var ex = false
             if (!ex) pr@ for (u in users) {
                 if (u.isBot) ex = true else {
                     val name = u.displayName
@@ -141,7 +141,7 @@ class SimpleAntiSpamHandler : TdHandler(), FirstMessageHandler.Interface {
             exec()
         } else if (message.forwardInfo != null &&
             (message.textOrCaption == null ||
-                    message.textOrCaption!!.count { CharUtil.isEmoji(it) } > 4)
+                    message.textOrCaption!!.count { CharUtil.isEmoji(it) } > 6)
         ) {
             postLog(message, "Type", "Bad Forward")
             log.debug("forward detected")
@@ -179,18 +179,9 @@ class SimpleAntiSpamHandler : TdHandler(), FirstMessageHandler.Interface {
 
         val text = message.textOrCaptionObj
         if (text != null) {
-            if (text.text.count { CharUtil.isEmoji(it) } > 4) {
+            if (text.text.count { CharUtil.isEmoji(it) } > 6) {
                 postLog(message, "Type", "Emoji")
                 exec()
-            }
-
-            for (entity in text.entities) {
-                if (entity.type is TdApi.TextEntityTypeMention || entity.type is TdApi.TextEntityTypeTextUrl) {
-                    val link = text.text.substring(entity.offset, entity.offset + entity.length)
-
-                    postLog(message, "Type", "Link", "Link", link)
-                    exec()
-                }
             }
 
             val txt = text.text
@@ -324,21 +315,26 @@ class SimpleAntiSpamHandler : TdHandler(), FirstMessageHandler.Interface {
                         }
                     }
 
-                    for (adName in adContents) {
-                        if (result.contains(adName)) {
-                            return@async suspend {
-                                postLog(
-                                    message,
-                                    "Type",
-                                    "Ad Content",
-                                    "OCR",
-                                    result,
-                                    "Match",
-                                    adName
-                                )
-                            } to true
+                    if (config.adContent) {
+
+                        for (adName in adContents) {
+                            if (result.contains(adName)) {
+                                return@async suspend {
+                                    postLog(
+                                        message,
+                                        "Type",
+                                        "Ad Content",
+                                        "OCR",
+                                        result,
+                                        "Match",
+                                        adName
+                                    )
+                                } to true
+                            }
                         }
+
                     }
+
                     null to false
                 })
             }
@@ -356,7 +352,7 @@ class SimpleAntiSpamHandler : TdHandler(), FirstMessageHandler.Interface {
                 message.forwardInfo == null &&
                 content is TdApi.MessageText &&
                 content.text.entities.isEmpty() &&
-                content.text.text.count { CharUtil.isEmoji(it) } < 5
+                content.text.text.count { CharUtil.isEmoji(it) } < 6
 
         if (!isSafe) {
             postLog(message, "Type", "Unsafe")
