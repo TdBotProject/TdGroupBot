@@ -65,6 +65,11 @@ suspend fun TdHandler.postLog(
     message: TdApi.Message,
     vararg actions: String
 ) {
+    if (getChatOrNull(global.logChannel) == null) {
+        clientLog.warn("Log channel not found.")
+        return
+    }
+
     val log = fmtMsg(message.chatId, message.id, message.senderUserId, actions)
     clientLog.info(parseTextEntities(log, TdApi.TextParseModeHTML()).text)
 
@@ -83,6 +88,11 @@ suspend fun TdHandler.postLog(
     userId: Int = 0,
     vararg actions: String
 ) {
+    if (getChatOrNull(global.logChannel) == null) {
+        clientLog.warn("Log channel not found.")
+        return
+    }
+
     val log = fmtMsg(chatId, 0L, userId, actions)
     clientLog.info(parseTextEntities(log, TdApi.TextParseModeHTML()).text)
 
