@@ -103,11 +103,11 @@ class SimpleAntiSpamHandler : TdHandler(), FirstMessageHandler.Interface {
                             break@pr
                         }
                     }
-                    if (!config.adName) for (adName in adNames) {
+                    if (config.adName) for (adName in adNames) {
                         if (name.contains(adName)) {
                             ex = true
 
-                            postLog(chatId, userId, "Type", "Ad Name")
+                            postLog(chatId, userId, "Type", "Ad Name", "Match", adName)
                             break@pr
                         }
                     }

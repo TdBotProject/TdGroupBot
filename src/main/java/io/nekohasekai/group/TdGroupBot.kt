@@ -129,8 +129,6 @@ open class TdGroupBot(tag: String = "main", name: String = "TdGroupBot") : TdCli
     }
 
     val groupConfigs by lazy { IdTableCacheMap(database, GroupConfig) }
-    val optionMessages by lazy { OptionMessages.MessagesMap(database) }
-    val optionChats by lazy { OptionMessages.ChatsMap(database) }
 
     var userAgent: TdClient? = null
 

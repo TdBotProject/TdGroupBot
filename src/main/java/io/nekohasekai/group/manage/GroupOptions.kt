@@ -3,7 +3,7 @@ package io.nekohasekai.group.manage
 import cn.hutool.cache.impl.LFUCache
 import cn.hutool.core.util.NumberUtil
 import io.nekohasekai.group.*
-import io.nekohasekai.group.exts.global
+import io.nekohasekai.group.exts.*
 import io.nekohasekai.ktlib.core.input
 import io.nekohasekai.ktlib.core.shift
 import io.nekohasekai.ktlib.td.core.TdException
@@ -150,7 +150,7 @@ class GroupOptions : TdHandler() {
 
         }
 
-        val targetChat = global.optionChats.fetch(userId to messageId).value
+        val targetChat = getOptionsChat(userId, messageId)
 
         if (targetChat == null) {
 
@@ -200,15 +200,11 @@ class GroupOptions : TdHandler() {
 
     suspend fun startSet(userId: Int, chatId: Long, messageId: Long, targetChat: Long, isEdit: Boolean) {
 
-        val chatCache = global.optionMessages.fetch(userId to chatId)
-
-        val lastMessage = chatCache.value
+        val lastMessage = getOptionsMessage(chatId, userId)
 
         if (lastMessage != null && lastMessage > 0L && !isEdit) {
 
-            chatCache.value = null
-            chatCache.flush()
-            global.optionChats.fetch(userId to lastMessage).write(null)
+            removeOptionsMessage(chatId, userId)
             delete(chatId, lastMessage)
 
         }
@@ -224,8 +220,7 @@ class GroupOptions : TdHandler() {
 
         } onSuccess {
             if (!isEdit) {
-                global.optionChats.fetch(userId to it.id).write(targetChat)
-                global.optionMessages.remove(userId to targetChat)
+                writeOptionsMessage(targetChat, userId, it.id)
             }
         } at messageId edit isEdit sendOrEditTo chatId
 
