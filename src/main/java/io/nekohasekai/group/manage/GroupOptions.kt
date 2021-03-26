@@ -200,12 +200,13 @@ class GroupOptions : TdHandler() {
 
     suspend fun startSet(userId: Int, chatId: Long, messageId: Long, targetChat: Long, isEdit: Boolean) {
 
-        val lastMessage = getOptionsMessage(chatId, userId)
+        val lastMessage = getOptionsMessage(targetChat, userId)
 
-        if (lastMessage != null && lastMessage > 0L && !isEdit) {
+        if (lastMessage != null && !isEdit) {
 
-            removeOptionsMessage(chatId, userId)
-            delete(chatId, lastMessage)
+            removeOptionsMessage(targetChat, userId)
+
+            if (lastMessage > 0) delete(targetChat, lastMessage)
 
         }
 
