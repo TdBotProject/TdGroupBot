@@ -28,6 +28,8 @@ class AntiBadUserbot : TdHandler() {
 
     override suspend fun gc() {
         super.gc()
+
+        commandDict.clear()
     }
 
     override suspend fun onNewMessage(userId: Int, chatId: Long, message: TdApi.Message) {
@@ -58,41 +60,8 @@ class AntiBadUserbot : TdHandler() {
             postLog(message, "Type", "Bad Userbot")
             exec()
         } else if (text.startsWith("-")) {
-            commandDict.put(chatId + message.id, message)
+            delete(message)
         }
-
-    }
-
-    override suspend fun onMessageContent(chatId: Long, messageId: Long, newContent: TdApi.MessageContent) {
-
-        val message = getMessageOrNull(chatId, messageId) ?: return
-        val userId = message.senderUserId
-        if (userId == 0 || isChatAdmin(chatId, userId)) return
-        val config = global.groupConfigs.fetch(chatId).value ?: return
-        val action = config.simpleAs.takeIf { it > 0 } ?: return
-
-        suspend fun exec(): Nothing {
-            SimpleAntiSpamHandler.spamDict.put(userId, Unit)
-
-            when (action) {
-                1 -> muteMember(chatId, userId)
-                2 -> banChatMember(chatId, userId)
-                3 -> kickMember(chatId, userId)
-            }
-
-            sudo delete message
-            if (isUserAgentAvailable(chatId)) with(userAgent!!) {
-                reportSupergroupSpam(chatId.toSupergroupId, userId, longArrayOf(message.id))
-                deleteChatMessagesFromUser(chatId, userId)
-            }
-            finishEvent()
-        }
-
-        if (commandDict.containsKey(chatId + messageId)) {
-            postLog(message, "Type", "Bad Userbot")
-            exec()
-        }
-
 
     }
 
