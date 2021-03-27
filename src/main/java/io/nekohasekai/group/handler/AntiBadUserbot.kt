@@ -3,6 +3,7 @@ package io.nekohasekai.group.handler
 import cn.hutool.cache.impl.LFUCache
 import io.nekohasekai.group.exts.global
 import io.nekohasekai.group.exts.isUserAgentAvailable
+import io.nekohasekai.group.exts.postLog
 import io.nekohasekai.group.exts.userAgent
 import io.nekohasekai.ktlib.td.core.TdHandler
 import io.nekohasekai.ktlib.td.core.raw.deleteChatMessagesFromUser
@@ -54,6 +55,7 @@ class AntiBadUserbot : TdHandler() {
         }
 
         if (userbotCommands.contains(text)) {
+            postLog(message, "Type", "Bad Userbot")
             exec()
         } else if (text.startsWith("-")) {
             commandDict.put(chatId + message.id, message)
@@ -86,7 +88,10 @@ class AntiBadUserbot : TdHandler() {
             finishEvent()
         }
 
-        if (commandDict.containsKey(chatId + messageId)) exec()
+        if (commandDict.containsKey(chatId + messageId)) {
+            postLog(message, "Type", "Bad Userbot")
+            exec()
+        }
 
 
     }
