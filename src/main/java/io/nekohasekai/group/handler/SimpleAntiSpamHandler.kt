@@ -36,6 +36,7 @@ class SimpleAntiSpamHandler : TdHandler(), FirstMessageHandler.Interface {
         val adContacts = ResourceUtil.readUtf8Str("ad_contact.txt").split("\n").toHashSet()
 
         val spamDict = LFUCache<Int, Unit>(-1, 1 * Minutes)
+        val unsafeDict = LFUCache<Int, Int>(-1, 5 * Minutes)
         val cc = CCConverter(CCTarget.SP)
 
     }
@@ -370,8 +371,18 @@ class SimpleAntiSpamHandler : TdHandler(), FirstMessageHandler.Interface {
         }
 
         if (!isSafe) {
-            postLog(message, "Type", "Unsafe")
-            sudo delete message
+            val count = (unsafeDict[userId] ?: 0) + 1
+            if (count < 10) {
+                postLog(message, "Type", "Unsafe")
+                sudo delete message
+                unsafeDict.put(userId, count)
+            } else {
+                unsafeDict.remove(userId)
+                postLog(message, "Type", "Flood")
+                exec()
+            }
+
+
             return true
         } else if (spamDict.containsKey(userId)) {
             postLog(message, "Type", "Cache")
