@@ -200,23 +200,7 @@ class SimpleAntiSpamHandler : TdHandler(), FirstMessageHandler.Interface {
                 }
             }
 
-            for (adContact in adContacts) {
-                if (txt.contains(adContact)) {
-                    postLog(message, "Type", "Ad Contact", "Contact", adContact)
-                    exec()
-                }
-            }
 
-            if (config.adContent) {
-
-                for (adContent in adContents) {
-                    if (txt.contains(adContent)) {
-                        postLog(message, "Type", "Ad Content", "Match", adContent)
-                        exec()
-                    }
-                }
-
-            }
         }
 
         val deferreds = ArrayList<Deferred<Pair<(suspend () -> Unit)?, Boolean>>>()
@@ -365,6 +349,25 @@ class SimpleAntiSpamHandler : TdHandler(), FirstMessageHandler.Interface {
                 content is TdApi.MessageText &&
                 content.text.entities.isEmpty() &&
                 content.text.text.count { CharUtil.isEmoji(it) } < 6
+
+        if (!isSafe && config.adContent && text != null) {
+
+            val origin = text.text
+            val txt = origin
+                .let { cc.convert(it).toLowerCase() }
+                .filter { CharUtil.isLetter(it) || TextUtility.isChinese(it) }
+
+            for (adContent in adContents) {
+                if (origin.contains(adContent)) {
+                    postLog(message, "Type", "Ad Content", "Match", adContent)
+                    exec()
+                } else if (txt.contains(adContent)) {
+                    postLog(message, "Type", "Ad Content", "Match", adContent)
+                    exec()
+                }
+            }
+
+        }
 
         if (!isSafe) {
             postLog(message, "Type", "Unsafe")
