@@ -184,9 +184,21 @@ class SimpleAntiSpamHandler : TdHandler(), FirstMessageHandler.Interface {
                 exec()
             }
 
-            val txt = text.text
+            val origin = text.text
+
+            val txt = origin
                 .let { cc.convert(it).toLowerCase() }
                 .filter { CharUtil.isLetter(it) || TextUtility.isChinese(it) }
+
+            for (adContact in adContacts) {
+                if (origin.contains(adContact)) {
+                    postLog(message, "Type", "Ad Contact", "Contact", adContact)
+                    exec()
+                } else if (txt.contains(adContact)) {
+                    postLog(message, "Type", "Ad Contact", "Contact", adContact)
+                    exec()
+                }
+            }
 
             for (adContact in adContacts) {
                 if (txt.contains(adContact)) {
