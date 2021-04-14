@@ -109,7 +109,7 @@ class AntiSpamOptions : GroupOptions.Handler() {
 
     }
 
-    fun mkAsButtons(userId: Int, config: GroupConfig): TdApi.ReplyMarkupInlineKeyboard {
+    suspend fun mkAsButtons(userId: Int, config: GroupConfig): TdApi.ReplyMarkupInlineKeyboard {
         val L = localeFor(userId)
 
         return inlineButton {
@@ -155,7 +155,7 @@ class AntiSpamOptions : GroupOptions.Handler() {
         }
     }
 
-    fun mkButtons(userId: Int, curr: Int): TdApi.ReplyMarkupInlineKeyboard {
+    suspend fun mkButtons(userId: Int, curr: Int): TdApi.ReplyMarkupInlineKeyboard {
 
         val L = localeFor(userId)
 

@@ -57,7 +57,7 @@ class ChannelMessagesOptions : GroupOptions.Handler() {
 
     }
 
-    fun cmButtons(userId: Int, targetChat: Long): TdApi.ReplyMarkupInlineKeyboard {
+    suspend fun cmButtons(userId: Int, targetChat: Long): TdApi.ReplyMarkupInlineKeyboard {
 
         val L = localeFor(userId)
 

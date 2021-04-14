@@ -53,7 +53,7 @@ class MemberPolicyOptions : GroupOptions.Handler() {
 
     }
 
-    fun mpButtons(userId: Int, targetChat: Long): TdApi.ReplyMarkupInlineKeyboard {
+    suspend fun mpButtons(userId: Int, targetChat: Long): TdApi.ReplyMarkupInlineKeyboard {
 
         val L = localeFor(userId)
 

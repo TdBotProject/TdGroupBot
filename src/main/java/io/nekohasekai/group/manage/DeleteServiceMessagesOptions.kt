@@ -55,7 +55,7 @@ class DeleteServiceMessagesOptions : GroupOptions.Handler() {
 
     }
 
-    fun dsButtons(userId: Int, targetChat: Long): TdApi.ReplyMarkupInlineKeyboard {
+    suspend fun dsButtons(userId: Int, targetChat: Long): TdApi.ReplyMarkupInlineKeyboard {
 
         val L = localeFor(userId)
         val config = global.groupConfigs.fetch(targetChat).value
