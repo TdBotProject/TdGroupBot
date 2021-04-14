@@ -22,11 +22,6 @@ class MemberPolicyHandler : TdHandler() {
 
     override suspend fun onNewMessage(userId: Int, chatId: Long, message: TdApi.Message) {
 
-        if (message.content !is TdApi.MessageChatAddMembers &&
-            message.content !is TdApi.MessageChatJoinByLink &&
-            message.replyInChatId == 0L
-        ) return
-
         val action = (global.groupConfigs.fetch(chatId).value?.takeIf { it.memberPolicy != 0 } ?: return).memberPolicy
 
         if (action == 1) {
