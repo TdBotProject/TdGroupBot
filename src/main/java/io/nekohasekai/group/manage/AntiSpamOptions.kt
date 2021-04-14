@@ -90,7 +90,7 @@ class AntiSpamOptions : GroupOptions.Handler() {
         } else if (subId == 4) {
 
             if (data.isEmpty()) {
-                sudo make L.SW_INFO withMarkup mkButtons(userId, cache.spamWatch) at messageId editTo chatId
+                sudo make L.SW_INFO withMarkup makeSwButtons(userId, cache.spamWatch) at messageId editTo chatId
                 sudo confirmTo queryId
                 return
             }
@@ -103,7 +103,7 @@ class AntiSpamOptions : GroupOptions.Handler() {
                 config.notifyChanged()
             }
 
-            sudo makeInlineButton mkButtons(userId, cache.spamWatch) at messageId editTo chatId
+            sudo makeInlineButton makeSwButtons(userId, cache.spamWatch) at messageId editTo chatId
 
         }
 
@@ -155,7 +155,7 @@ class AntiSpamOptions : GroupOptions.Handler() {
         }
     }
 
-    suspend fun mkButtons(userId: Int, curr: Int): TdApi.ReplyMarkupInlineKeyboard {
+    suspend fun makeSwButtons(userId: Int, curr: Int): TdApi.ReplyMarkupInlineKeyboard {
 
         val L = localeFor(userId)
 
@@ -167,13 +167,13 @@ class AntiSpamOptions : GroupOptions.Handler() {
                     dataButton(
                         (index == curr).toStatusString(true),
                         GroupOptions.DATA_ID,
-                        SIMPLE_AS,
+                        SPAM_WATCH,
                         byteArrayOf(index.toByte())
                     )
                 }
             }
 
-            dataLine(L.BACK_ARROW, GroupOptions.DATA_ID, SUB_ID)
+            dataLine(L.BACK_ARROW, GroupOptions.DATA_ID, SPAM_WATCH)
 
         }
 
