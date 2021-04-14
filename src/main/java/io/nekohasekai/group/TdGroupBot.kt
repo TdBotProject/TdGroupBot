@@ -34,7 +34,7 @@ import java.io.File
 
 open class TdGroupBot(tag: String = "main", name: String = "TdGroupBot") : TdCli(tag, name) {
 
-    override val localeList = arrayOf("en_US", "zh_CN")
+    override val localeList = arrayOf("en_US", "zh_CN", "ru_RU")
 
     companion object : TdGroupBot() {
 
