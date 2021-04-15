@@ -3,7 +3,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     application
     kotlin("jvm") version "1.4.30"
-    id("com.github.ben-manes.versions") version "0.36.0"
+    id("com.github.ben-manes.versions") version "0.38.0"
 }
 
 repositories {
@@ -44,7 +44,7 @@ compileKotlin.kotlinOptions {
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.3")
 
     val vKtLib = "1.0-SNAPSHOT"
     implementation("io.nekohasekai.ktlib:ktlib-td-cli:$vKtLib")
@@ -56,7 +56,7 @@ dependencies {
     implementation("com.google.zxing:javase:3.4.1")
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.google.code.gson:gson:2.8.6")
-    implementation("com.hankcs:hanlp:portable-1.7.8")
+    implementation("com.hankcs:hanlp:portable-1.8.1")
 
     implementation("org.slf4j:slf4j-nop:2.0.0-alpha1")
 

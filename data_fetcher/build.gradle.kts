@@ -40,12 +40,12 @@ compileKotlin.kotlinOptions {
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.3")
 
     val vKtLib = "1.0-SNAPSHOT"
     implementation("io.nekohasekai.ktlib:ktlib-td-cli:$vKtLib")
     implementation("io.nekohasekai.ktlib:ktlib-opencc:$vKtLib")
-    implementation("com.hankcs:hanlp:portable-1.7.8")
+    implementation("com.hankcs:hanlp:portable-1.8.1")
     implementation("org.slf4j:slf4j-nop:2.0.0-alpha1")
 
 }
