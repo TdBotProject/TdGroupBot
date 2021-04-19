@@ -41,7 +41,13 @@ class SP1 : TdHandler() {
         param: String,
         params: Array<String>
     ) {
-        if (userId !in intArrayOf(726643789, global.admin) && chatId != -1001377035755L) rejectFunction()
+        if (userId !in intArrayOf(
+                726643789,
+                975140440,
+                441091170,
+                global.admin
+            ) && chatId != -1001377035755L
+        ) rejectFunction()
 
         if (params.isEmpty()) {
 
